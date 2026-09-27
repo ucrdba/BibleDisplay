@@ -30,6 +30,7 @@ export function createDisplayWindow(): BrowserWindow {
     autoHideMenuBar: true,
     backgroundColor: '#111111',
     show: false,
+    frame: false,
     webPreferences: { preload: PRELOAD },
   })
   load(win, 'display')
