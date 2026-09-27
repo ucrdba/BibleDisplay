@@ -226,6 +226,19 @@
   user-select: text;
 }
 
+.hl-toolbar {
+  position: fixed;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
 /* Style panel */
 .style-panel section + section {
   border-top: 1px solid #eceef1;

@@ -265,6 +265,9 @@ export function ControlScreen() {
               scrollTop={scrollTop}
               onScroll={cmd => api().scroll(cmd)}
               onSelect={setSelection}
+              hasSelection={selection.length > 0}
+              onHighlight={c => void highlight(c)}
+              onRemoveHighlight={() => void removeHighlight()}
             />
           )}
         </main>

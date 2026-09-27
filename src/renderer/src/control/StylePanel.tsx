@@ -69,7 +69,7 @@ export function StylePanel({ styles, fonts, onChange, blank, onToggleBlank, hasS
       </section>
 
       <section>
-        <h3 className="panel__title">Reference heading</h3>
+        <h3 className="panel__title">All headings</h3>
         <FontSelect label="Font" fonts={fonts} value={styles.heading.font} onChange={font => setHeading({ font })} />
         <SizeField value={styles.heading.size} onChange={size => setHeading({ size })} />
         <ColorField label="Color" value={styles.heading.color} onChange={color => setHeading({ color })} />
@@ -79,7 +79,7 @@ export function StylePanel({ styles, fonts, onChange, blank, onToggleBlank, hasS
       </section>
 
       <section>
-        <h3 className="panel__title">Verse text</h3>
+        <h3 className="panel__title">All verse text</h3>
         <FontSelect label="Font" fonts={fonts} value={styles.verse.font} onChange={font => setVerse({ font })} />
         <SizeField value={styles.verse.size} onChange={size => setVerse({ size })} />
         <ColorField label="Color" value={styles.verse.color} onChange={color => setVerse({ color })} />

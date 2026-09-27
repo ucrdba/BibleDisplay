@@ -42,7 +42,7 @@ describe('fontOptions', () => {
 describe('StylePanel', () => {
   it('shows every style section and the current scale', () => {
     const out = render(false)
-    for (const text of ['Reference heading', 'Verse text', 'Jesus&#x27; words', 'Verse numbers', 'Background', 'A−', 'A+', '100%', 'Blank']) {
+    for (const text of ['All headings', 'All verse text', 'Jesus&#x27; words', 'Verse numbers', 'Background', 'A−', 'A+', '100%', 'Blank']) {
       expect(out).toContain(text)
     }
   })
