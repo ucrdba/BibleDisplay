@@ -4,3 +4,4 @@ dist/
 release/
 .superpowers/
 *.db-journal
+.claude/worktrees/
