@@ -12,6 +12,8 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Highlight: select words in the preview, then pick a color. **Remove highlight** clears the selected part.
 - Import a list: click **Import list…** and choose a `.txt` file with one reference per line (e.g. your sermon's verses). Click a line to show it; the list stays until you import another file or click **Clear list**. Lines with problems are marked ⚠.
 - Imported and Recent lists: click a line to show it; **Ctrl+click** adds or removes lines, **Shift+click** selects a range — all selected lines show together. Right-click (or press **Delete**) to delete the selected lines from the list.
+- **Display on** (right panel): pick which monitor shows the verses; your choice is remembered.
+- **F1** or **? Help**: shows how to use everything.
 
 ## Development
 

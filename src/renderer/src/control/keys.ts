@@ -5,6 +5,7 @@ export type KeyAction =
   | { type: 'scale'; dir: 1 | -1 }
   | { type: 'toggleBlank' }
   | { type: 'clear' }
+  | { type: 'help' }
 
 export interface KeyInfo {
   key: string
@@ -26,6 +27,7 @@ export function keyToAction(k: KeyInfo): KeyAction | null {
   if (k.key === 'PageUp') return scroll('pageUp')
   if (k.key === 'PageDown') return scroll('pageDown')
   if (k.key === 'Escape') return { type: 'clear' }
+  if (k.key === 'F1') return { type: 'help' }
   if (k.inputFocused) return null
   switch (k.key) {
     case 'Home':

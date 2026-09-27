@@ -14,6 +14,7 @@ export const IPC = {
   removeRecent: 'recent:remove',
   listFonts: 'fonts:list',
   getDisplayInfo: 'display:get-info',
+  setDisplayMonitor: 'display:set-monitor',
   present: 'display:present',
   scroll: 'display:scroll',
   displayReady: 'display:ready',

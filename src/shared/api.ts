@@ -28,6 +28,7 @@ export interface ControlApi {
   removeImported(indices: number[]): Promise<void>
   listFonts(): Promise<string[]>
   getDisplayInfo(): Promise<DisplayInfo>
+  setDisplayMonitor(id: number | null): Promise<void>
   present(state: DisplayState): void
   scroll(cmd: ScrollCommand): void
   onDisplayInfo(cb: (info: DisplayInfo) => void): Unsubscribe

@@ -84,10 +84,19 @@ export interface DisplayState {
   blank: boolean
 }
 
+export interface MonitorInfo {
+  id: number
+  label: string
+  primary: boolean
+}
+
 export interface DisplayInfo {
   width: number
   height: number
   secondMonitor: boolean
+  monitors: MonitorInfo[]
+  chosenMonitorId: number | null
+  activeMonitorId: number | null
 }
 
 export type ImportResult = { kind: 'ok'; lines: string[] } | { kind: 'canceled' } | { kind: 'error'; message: string }

@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { IPC } from '../shared/ipc'
 import type { DisplayInfo } from '../shared/types'
 import { BibleDb } from './bibleDb'
+import { describeMonitors } from './displayPick'
 import { registerIpc } from './ipc'
 import { UserDb } from './userDb'
 import { createControlWindow, createDisplayWindow, placeDisplayWindow } from './windows'
@@ -10,6 +11,8 @@ import { createControlWindow, createDisplayWindow, placeDisplayWindow } from './
 let control: BrowserWindow | null = null
 let display: BrowserWindow | null = null
 let secondMonitor = false
+let preferredMonitorId: number | null = null
+let activeMonitorId: number | null = null
 
 function bibleDbPath(): string {
   return app.isPackaged
@@ -19,7 +22,14 @@ function bibleDbPath(): string {
 
 function displayInfo(): DisplayInfo {
   const [width, height] = display?.getContentSize() ?? [1920, 1080]
-  return { width, height, secondMonitor }
+  return {
+    width,
+    height,
+    secondMonitor,
+    monitors: describeMonitors(screen.getAllDisplays(), screen.getPrimaryDisplay().id),
+    chosenMonitorId: preferredMonitorId,
+    activeMonitorId,
+  }
 }
 
 function sendDisplayInfo(): void {
@@ -28,7 +38,9 @@ function sendDisplayInfo(): void {
 
 function reposition(): void {
   if (!display) return
-  secondMonitor = placeDisplayWindow(display)
+  const placed = placeDisplayWindow(display, preferredMonitorId)
+  secondMonitor = placed.secondMonitor
+  activeMonitorId = placed.monitorId
   sendDisplayInfo()
 }
 
@@ -65,7 +77,15 @@ if (!app.requestSingleInstanceLock()) {
       return
     }
 
-    registerIpc({ bible, user, getControl: () => control, getDisplay: () => display, displayInfo })
+    preferredMonitorId = user.getDisplayMonitorId()
+
+    function setMonitor(id: number | null): void {
+      preferredMonitorId = id
+      user.setDisplayMonitorId(id)
+      reposition()
+    }
+
+    registerIpc({ bible, user, getControl: () => control, getDisplay: () => display, displayInfo, setMonitor })
 
     control = createControlWindow()
     display = createDisplayWindow()

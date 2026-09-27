@@ -51,16 +51,24 @@ export function createDisplayWindow(): BrowserWindow {
   return win
 }
 
-/** Puts the display window fullscreen on the second monitor. Returns false if there is none. */
-export function placeDisplayWindow(win: BrowserWindow): boolean {
+/**
+ * Puts the display window fullscreen on the target monitor (the preferred one if connected and
+ * not the primary, otherwise the first non-primary monitor). Falls back to a windowed placement
+ * on the primary's work area if there is no non-primary target, or if the target is the primary
+ * (chosen explicitly as "this screen").
+ */
+export function placeDisplayWindow(
+  win: BrowserWindow,
+  preferredId: number | null,
+): { secondMonitor: boolean; monitorId: number | null } {
   const primary = screen.getPrimaryDisplay()
-  const target = pickDisplay(screen.getAllDisplays(), primary.id)
+  const target = pickDisplay(screen.getAllDisplays(), primary.id, preferredId)
   if (win.isFullScreen()) win.setFullScreen(false)
-  if (target) {
+  if (target && target.id !== primary.id) {
     win.setBounds(target.bounds)
     win.setFullScreen(true)
     win.showInactive()
-    return true
+    return { secondMonitor: true, monitorId: target.id }
   }
   const { x, y, width, height } = primary.workArea
   win.setBounds({
@@ -70,5 +78,5 @@ export function placeDisplayWindow(win: BrowserWindow): boolean {
     height: Math.round(height * 0.6),
   })
   win.showInactive()
-  return false
+  return { secondMonitor: false, monitorId: primary.id }
 }

@@ -166,6 +166,19 @@ export class UserDb {
     })()
   }
 
+  getDisplayMonitorId(): number | null {
+    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('displayMonitor') as { value: string } | undefined
+    if (!row) return null
+    const n: unknown = JSON.parse(row.value)
+    return typeof n === 'number' && Number.isInteger(n) ? n : null
+  }
+
+  setDisplayMonitorId(id: number | null): void {
+    this.db
+      .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
+      .run('displayMonitor', JSON.stringify(id))
+  }
+
   close(): void {
     this.db.close()
   }

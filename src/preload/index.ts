@@ -25,6 +25,7 @@ const api: BibleApi = {
     removeImported: indices => ipcRenderer.invoke(IPC.removeImported, indices),
     listFonts: () => ipcRenderer.invoke(IPC.listFonts),
     getDisplayInfo: () => ipcRenderer.invoke(IPC.getDisplayInfo),
+    setDisplayMonitor: id => ipcRenderer.invoke(IPC.setDisplayMonitor, id),
     present: state => ipcRenderer.send(IPC.present, state),
     scroll: cmd => ipcRenderer.send(IPC.scroll, cmd),
     onDisplayInfo: cb => subscribe(IPC.evtDisplayInfo, cb),

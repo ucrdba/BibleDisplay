@@ -32,6 +32,11 @@ describe('keyToAction', () => {
     expect(k('Escape', false, true)).toBeNull()
   })
 
+  it('opens help with F1, even while typing', () => {
+    expect(k('F1')).toEqual({ type: 'help' })
+    expect(k('F1', true)).toEqual({ type: 'help' })
+  })
+
   it('ignores other keys', () => {
     expect(k('x')).toBeNull()
     expect(k('b', false, true)).toBeNull()

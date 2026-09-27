@@ -15,6 +15,7 @@ export interface MainContext {
   getControl(): BrowserWindow | null
   getDisplay(): BrowserWindow | null
   displayInfo(): DisplayInfo
+  setMonitor(id: number | null): void
 }
 
 export function registerIpc(ctx: MainContext): void {
@@ -62,6 +63,7 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.removeImported, (_e, indices: number[]) => ctx.user.removeImported(indices))
   ipcMain.handle(IPC.listFonts, () => listFonts())
   ipcMain.handle(IPC.getDisplayInfo, () => ctx.displayInfo())
+  ipcMain.handle(IPC.setDisplayMonitor, (_e, id: number | null) => ctx.setMonitor(id))
   ipcMain.handle(IPC.displayReady, () => ({ state, styles: ctx.user.getStyles() }))
 
   ipcMain.on(IPC.present, (_e, next: DisplayState) => {

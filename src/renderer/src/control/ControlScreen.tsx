@@ -4,8 +4,10 @@ import { parseReferences } from '../../../shared/parser'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
 import './control.css'
+import { HelpPanel } from './HelpPanel'
 import { ImportedList } from './ImportedList'
 import { keyToAction } from './keys'
+import { MonitorSelect } from './MonitorSelect'
 import { PreviewPanel } from './PreviewPanel'
 import { RecentList } from './RecentList'
 import { ReferenceInput } from './ReferenceInput'
@@ -32,7 +34,15 @@ export function ControlScreen() {
   const [importError, setImportError] = useState<string | null>(null)
   const [styles, setStyles] = useState<Styles | null>(null)
   const [fonts, setFonts] = useState<string[]>([])
-  const [info, setInfo] = useState<DisplayInfo>({ width: 1920, height: 1080, secondMonitor: true })
+  const [info, setInfo] = useState<DisplayInfo>({
+    width: 1920,
+    height: 1080,
+    secondMonitor: true,
+    monitors: [],
+    chosenMonitorId: null,
+    activeMonitorId: null,
+  })
+  const [helpOpen, setHelpOpen] = useState(false)
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
 
@@ -161,8 +171,8 @@ export function ControlScreen() {
     [imported, index],
   )
 
-  const latest = useRef({ styles, toggleBlank, updateStyles, clear })
-  latest.current = { styles, toggleBlank, updateStyles, clear }
+  const latest = useRef({ styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen })
+  latest.current = { styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -171,13 +181,21 @@ export function ControlScreen() {
       const el = document.activeElement
       const inputFocused = !!el && ['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)
       const action = keyToAction({ key: e.key, ctrlKey: e.ctrlKey, inputFocused })
+      const cur = latest.current
+      if (cur.helpOpen) {
+        if (action && (action.type === 'clear' || action.type === 'help')) {
+          e.preventDefault()
+          cur.setHelpOpen(false)
+        }
+        return
+      }
       if (!action) return
       e.preventDefault()
-      const cur = latest.current
       if (action.type === 'scroll') api().scroll(action.cmd)
       else if (action.type === 'scale') {
         if (cur.styles) cur.updateStyles({ ...cur.styles, scale: stepScale(cur.styles.scale, action.dir) })
       } else if (action.type === 'clear') cur.clear()
+      else if (action.type === 'help') cur.setHelpOpen(true)
       else cur.toggleBlank()
     }
     window.addEventListener('keydown', onKey)
@@ -186,9 +204,14 @@ export function ControlScreen() {
 
   return (
     <div className="control">
-      {!info.secondMonitor && (
+      {!info.secondMonitor && info.chosenMonitorId === null && (
         <div className="banner">No second monitor detected — the display is showing in a window on this screen.</div>
       )}
+      <div className="control__bar">
+        <button type="button" className="btn help-btn" title="Help (F1)" onClick={() => setHelpOpen(true)}>
+          ? Help
+        </button>
+      </div>
       <div className="control__panels">
         <aside className="panel panel--left">
           <h3 className="panel__title">Enter verses</h3>
@@ -247,6 +270,7 @@ export function ControlScreen() {
         </main>
 
         <aside className="panel panel--right">
+          <MonitorSelect monitors={info.monitors} chosenId={info.chosenMonitorId} onChange={id => void api().setDisplayMonitor(id)} />
           {styles && (
             <StylePanel
               styles={styles}
@@ -261,6 +285,7 @@ export function ControlScreen() {
           )}
         </aside>
       </div>
+      {helpOpen && <HelpPanel onClose={() => setHelpOpen(false)} />}
     </div>
   )
 }

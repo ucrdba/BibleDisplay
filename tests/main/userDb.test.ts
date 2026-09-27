@@ -94,3 +94,18 @@ describe('UserDb recent inputs', () => {
     expect(list).not.toContain('jn 3:1')
   })
 })
+
+describe('UserDb display monitor', () => {
+  it('starts as automatic and remembers a choice across reopening', () => {
+    const path = newPath()
+    const db = open(path)
+    expect(db.getDisplayMonitorId()).toBeNull()
+    db.setDisplayMonitorId(42)
+    db.close()
+    opened.pop()
+    const again = open(path)
+    expect(again.getDisplayMonitorId()).toBe(42)
+    again.setDisplayMonitorId(null)
+    expect(again.getDisplayMonitorId()).toBeNull()
+  })
+})
