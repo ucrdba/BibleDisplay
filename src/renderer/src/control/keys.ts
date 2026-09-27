@@ -4,6 +4,7 @@ export type KeyAction =
   | { type: 'scroll'; cmd: ScrollCommand }
   | { type: 'scale'; dir: 1 | -1 }
   | { type: 'toggleBlank' }
+  | { type: 'clear' }
 
 export interface KeyInfo {
   key: string
@@ -24,6 +25,7 @@ export function keyToAction(k: KeyInfo): KeyAction | null {
   }
   if (k.key === 'PageUp') return scroll('pageUp')
   if (k.key === 'PageDown') return scroll('pageDown')
+  if (k.key === 'Escape') return { type: 'clear' }
   if (k.inputFocused) return null
   switch (k.key) {
     case 'Home':

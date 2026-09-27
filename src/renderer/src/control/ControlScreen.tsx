@@ -130,11 +130,13 @@ export function ControlScreen() {
     [imported, index],
   )
 
-  const latest = useRef({ styles, toggleBlank, updateStyles })
-  latest.current = { styles, toggleBlank, updateStyles }
+  const latest = useRef({ styles, toggleBlank, updateStyles, clear })
+  latest.current = { styles, toggleBlank, updateStyles, clear }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // The book menu handles its own keys (e.g. Esc closes it) and marks them handled.
+      if (e.defaultPrevented) return
       const el = document.activeElement
       const inputFocused = !!el && ['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)
       const action = keyToAction({ key: e.key, ctrlKey: e.ctrlKey, inputFocused })
@@ -144,7 +146,8 @@ export function ControlScreen() {
       if (action.type === 'scroll') api().scroll(action.cmd)
       else if (action.type === 'scale') {
         if (cur.styles) cur.updateStyles({ ...cur.styles, scale: stepScale(cur.styles.scale, action.dir) })
-      } else cur.toggleBlank()
+      } else if (action.type === 'clear') cur.clear()
+      else cur.toggleBlank()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)

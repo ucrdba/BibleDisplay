@@ -26,6 +26,12 @@ describe('keyToAction', () => {
     expect(k('-', true, true)).toEqual({ type: 'scale', dir: -1 })
   })
 
+  it('clears with Esc, even while typing', () => {
+    expect(k('Escape')).toEqual({ type: 'clear' })
+    expect(k('Escape', true)).toEqual({ type: 'clear' })
+    expect(k('Escape', false, true)).toBeNull()
+  })
+
   it('ignores other keys', () => {
     expect(k('x')).toBeNull()
     expect(k('b', false, true)).toBeNull()

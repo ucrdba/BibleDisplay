@@ -8,7 +8,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - A period works like a colon, so you don't need Shift: `gen 1.1`, `jn 1.3-5`, `jn 1.50-2.3`.
 - Books: full names, 3-letter codes (`gen`, `mar`, `joh`), common short forms (`jn`, `mk`, `ps`), or any unique start of a name. Numbered books: `1 john`, `1jn`, `1 joh`.
 - Type-ahead: start typing a book; ↑/↓ to choose, Tab or Enter to accept, Esc to close.
-- **A− / A+** or **Ctrl − / Ctrl +**: text size. **PgUp/PgDn**, **↑/↓**, **Home/End**, or the mouse wheel over the preview: scroll the display. **B**: blank the display.
+- **A− / A+** or **Ctrl − / Ctrl +**: text size. **PgUp/PgDn**, **↑/↓**, **Home/End**, or the mouse wheel over the preview: scroll the display. **B**: blank the display (press again to bring the verses back). **Esc**: Clear — empty the input and remove everything from the display (when the book suggestions are open, Esc just closes them).
 - Highlight: select words in the preview, then pick a color. **Remove highlight** clears the selected part.
 - Import a list: click **Import list…** and choose a `.txt` file with one reference per line (e.g. your sermon's verses). Click a line to show it; the list stays until you import another file or click **Clear list**. Lines with problems are marked ⚠.
 
