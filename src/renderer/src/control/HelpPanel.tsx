@@ -102,8 +102,9 @@ export function HelpPanel({ version, onClose }: Props) {
 
         <h3>Highlight words</h3>
         <p>
-          Highlight: drag across words in the live preview, then pick a color on the right. Remove highlight
-          clears the selected part. Highlights are saved.
+          Highlight: drag across words in the live preview, then pick a color in the toolbar that pops up under
+          them (white and black work on dark and light backgrounds). Remove highlight clears the selected part.
+          Highlights are saved. The All verse text and All headings colors on the right change all text.
         </p>
 
         <h3>Saving</h3>

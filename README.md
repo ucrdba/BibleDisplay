@@ -9,7 +9,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Books: full names, 3-letter codes (`gen`, `mar`, `joh`), common short forms (`jn`, `mk`, `ps`), or any unique start of a name. Numbered books: `1 john`, `1jn`, `1 joh`.
 - Type-ahead: start typing a book; ↑/↓ to choose, Tab or Enter to accept, Esc to close.
 - **A− / A+** or **Ctrl − / Ctrl +**: text size. **PgUp/PgDn**, **↑/↓**, **Home/End**, or the mouse wheel over the preview: scroll the display. **B**: blank the display (press again to bring the verses back). **Esc**: Clear — empty the input and remove everything from the display (when the book suggestions are open, Esc just closes them).
-- Highlight: select words in the preview, then pick a color. **Remove highlight** clears the selected part.
+- Highlight: select words in the preview, then pick a color in the toolbar that pops up under them. **Remove highlight** clears the selected part.
 - Import a list: click **Import list…** and choose a `.txt` file with one reference per line (e.g. your sermon's verses). Click a line to show it; the list stays until you import another file or click **Clear list**. Lines with problems are marked ⚠.
 - Imported and Recent lists: click a line to show it; **Ctrl+click** adds or removes lines, **Shift+click** selects a range — all selected lines show together. Right-click (or press **Delete**) to delete the selected lines from the list.
 - Right-click the live preview to **Save verse list…** (re-importable) or **Save verse text…** (full text).
