@@ -9,6 +9,7 @@ export const IPC = {
   listRecent: 'recent:list',
   importList: 'imported:import',
   saveTextFile: 'file:save-text',
+  printHtml: 'file:print-html',
   listImported: 'imported:list',
   clearImported: 'imported:clear',
   removeImported: 'imported:remove',

@@ -4,6 +4,7 @@ import type {
   DisplayInfo,
   DisplayState,
   ImportResult,
+  PrintResult,
   RefGroup,
   SaveResult,
   ScrollCommand,
@@ -25,6 +26,7 @@ export interface ControlApi {
   removeRecent(inputs: string[]): Promise<void>
   importList(): Promise<ImportResult>
   saveTextFile(suggestedName: string, content: string): Promise<SaveResult>
+  printHtml(html: string): Promise<PrintResult>
   listImported(): Promise<string[]>
   clearImported(): Promise<void>
   removeImported(indices: number[]): Promise<void>

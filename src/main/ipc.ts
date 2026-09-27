@@ -1,4 +1,4 @@
-import { dialog, ipcMain, type BrowserWindow } from 'electron'
+import { BrowserWindow as ElectronBrowserWindow, dialog, ipcMain, type BrowserWindow } from 'electron'
 import { basename } from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
@@ -8,6 +8,7 @@ import type {
   DisplayInfo,
   DisplayState,
   ImportResult,
+  PrintResult,
   RefGroup,
   SaveResult,
   ScrollCommand,
@@ -81,6 +82,23 @@ export function registerIpc(ctx: MainContext): void {
       return { kind: 'saved', fileName: basename(pick.filePath) }
     } catch (e) {
       return { kind: 'error', message: (e as Error).message }
+    }
+  })
+  ipcMain.handle(IPC.printHtml, async (_e, html: string): Promise<PrintResult> => {
+    const win = new ElectronBrowserWindow({ show: false, webPreferences: { sandbox: true, javascript: false } })
+    try {
+      await win.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
+      return await new Promise<PrintResult>(resolve => {
+        win.webContents.print({ silent: false, printBackground: false }, (success, failureReason) => {
+          if (success) resolve({ kind: 'printed' })
+          else if (failureReason === 'cancelled') resolve({ kind: 'canceled' })
+          else resolve({ kind: 'error', message: failureReason })
+        })
+      })
+    } catch (e) {
+      return { kind: 'error', message: (e as Error).message }
+    } finally {
+      win.destroy()
     }
   })
   ipcMain.handle(IPC.listImported, () => ctx.user.listImported())

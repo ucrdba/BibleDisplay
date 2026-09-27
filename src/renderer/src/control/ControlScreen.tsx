@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toVerseList, toVerseText } from '../../../shared/exportVerses'
 import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type ListSelection } from '../../../shared/listSelection'
 import { parseReferences } from '../../../shared/parser'
+import { buildPrintHtml } from '../../../shared/printHtml'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
 import './control.css'
@@ -130,16 +131,27 @@ export function ControlScreen() {
     setImported(result.lines)
   }
 
+  const notify = (message: string) => {
+    if (saveNoticeTimer.current) clearTimeout(saveNoticeTimer.current)
+    setSaveNotice(message)
+    saveNoticeTimer.current = setTimeout(() => setSaveNotice(null), 4000)
+  }
+
   const save = async (suggestedName: string, content: string) => {
     const result = await api().saveTextFile(suggestedName, content)
     if (result.kind === 'canceled') return
-    if (saveNoticeTimer.current) clearTimeout(saveNoticeTimer.current)
-    setSaveNotice(result.kind === 'saved' ? `Saved: ${result.fileName}` : `Could not save: ${result.message}`)
-    saveNoticeTimer.current = setTimeout(() => setSaveNotice(null), 4000)
+    notify(result.kind === 'saved' ? `Saved: ${result.fileName}` : `Could not save: ${result.message}`)
   }
 
   const saveList = () => void save('Verse list.txt', toVerseList(groups))
   const saveText = () => void save('Verse text.txt', toVerseText(groups))
+
+  const print = async () => {
+    if (!styles) return
+    const html = buildPrintHtml(groups, { heading: styles.heading.font, verse: styles.verse.font })
+    const result = await api().printHtml(html)
+    if (result.kind === 'error') notify(`Could not print: ${result.message}`)
+  }
 
   const clearImported = async () => {
     await api().clearImported()
@@ -287,6 +299,7 @@ export function ControlScreen() {
               canSave={groups.length > 0}
               onSaveList={saveList}
               onSaveText={saveText}
+              onPrint={() => void print()}
             />
           )}
         </main>

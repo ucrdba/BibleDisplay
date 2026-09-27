@@ -107,11 +107,15 @@ export function HelpPanel({ version, onClose }: Props) {
           Highlights are saved. The All verse text and All headings colors on the right change all text.
         </p>
 
-        <h3>Saving</h3>
+        <h3>Saving and printing</h3>
         <p>
           Right-click the live preview to <strong>Save verse list…</strong> (a <code>.txt</code> you can bring
           back with Import list…) or <strong>Save verse text…</strong> (headings and full verse text to paste
           elsewhere).
+        </p>
+        <p>
+          Right-click → <strong>Print…</strong> to print the passages (Jesus' words in red), or choose
+          "Microsoft Print to PDF" for a PDF.
         </p>
 
         <h3>Blank vs Clear</h3>

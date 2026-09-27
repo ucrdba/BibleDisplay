@@ -18,7 +18,7 @@ interface Anchor {
 const TOOLBAR_WIDTH = 340
 const TOOLBAR_HEIGHT = 40
 const MENU_WIDTH = 190
-const MENU_HEIGHT = 76
+const MENU_HEIGHT = 114
 
 interface Props {
   groups: DisplayGroup[]
@@ -34,6 +34,7 @@ interface Props {
   canSave: boolean
   onSaveList(): void
   onSaveText(): void
+  onPrint(): void
 }
 
 export function previewScale(panel: Size, display: Size): number {
@@ -55,6 +56,7 @@ export function PreviewPanel({
   canSave,
   onSaveList,
   onSaveText,
+  onPrint,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
   const viewport = useRef<HTMLDivElement>(null)
@@ -180,6 +182,17 @@ export function PreviewPanel({
             }}
           >
             Save verse text…
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!canSave}
+            onClick={() => {
+              setMenu(null)
+              onPrint()
+            }}
+          >
+            Print…
           </button>
         </div>
       )}
