@@ -60,6 +60,12 @@ describe('suggest', () => {
     expect(hint('Luke 99:')).toBe('Luke has only 24 chapters')
     expect(hint('jude ')).toBe('1 chapter')
   })
+
+  it('shows the verse hint after a period too', () => {
+    expect(hint('Luke 1.')).toBe('80 verses')
+    expect(hint('Luke 1.5')).toBe('80 verses')
+    expect(hint('Jn. ')).toBe('21 chapters')
+  })
 })
 
 describe('applyBook', () => {

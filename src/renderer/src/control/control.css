@@ -311,3 +311,9 @@ input[type='color'] {
   font-size: 12px;
   margin: 4px 0;
 }
+
+.panel--left .list {
+  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding-top: 10px;
+}

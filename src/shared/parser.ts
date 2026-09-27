@@ -2,7 +2,7 @@ import { resolveBook, type BookMatch } from './resolve'
 import type { BibleIndex, Book, ParseResult, RefError, RefGroup } from './types'
 
 // book text (lazy), then chapter[:verse][-chapter-or-verse[:verse]]
-const ITEM_RE = /^(.*?)\s*(\d+)(?:\s*:\s*(\d+))?(?:\s*[-–—]\s*(\d+)(?:\s*:\s*(\d+))?)?\s*$/
+const ITEM_RE = /^(.*?)\s*(\d+)(?:\s*[:.]\s*(\d+))?(?:\s*[-–—]\s*(\d+)(?:\s*[:.]\s*(\d+))?)?\s*$/
 
 interface Item {
   text: string
@@ -64,7 +64,7 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
     const fail = (message: string) => errors.push({ message, inputStart: item.start, inputEnd: item.end })
     const m = ITEM_RE.exec(item.text)
     if (!m) {
-      const bookPart = item.text.replace(/[\s\d:\-–—]+$/, '')
+      const bookPart = item.text.replace(/[\s\d:.\-–—]+$/, '')
       if (!bookPart) {
         fail(`Incomplete reference "${item.text}"`)
         continue
@@ -72,10 +72,13 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
       const r = resolveBook(bookPart)
       if (r.kind !== 'book') {
         fail(bookError(bookPart, r))
-      } else if (bookPart === item.text) {
-        fail(`Missing chapter after "${r.book.name}"`)
       } else {
-        fail(`Incomplete reference "${item.text}"`)
+        const tail = item.text.slice(bookPart.length)
+        if (!/\d/.test(tail)) {
+          fail(`Missing chapter after "${r.book.name}"`)
+        } else {
+          fail(`Incomplete reference "${item.text}"`)
+        }
       }
       continue
     }

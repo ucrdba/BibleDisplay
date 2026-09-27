@@ -113,4 +113,25 @@ describe('parseReferences', () => {
     expect(messages('3:')).toEqual(['Incomplete reference "3:"'])
     expect(parse('jn 3:16, luke 3:').errors).toEqual([{ message: 'Incomplete reference "luke 3:"', inputStart: 9, inputEnd: 16 }])
   })
+
+  it('accepts a period between chapter and verse', () => {
+    expect(labels('gen 1.1')).toEqual(['Genesis 1:1'])
+    expect(labels('jn 1.3-5')).toEqual(['John 1:3-5'])
+    expect(labels('jn 1.50-2.3')).toEqual(['John 1:50-2:3'])
+    expect(labels('jn 3.16, 18')).toEqual(['John 3:16', 'John 3:18'])
+    expect(labels('jn 3.16, 4.2')).toEqual(['John 3:16', 'John 4:2'])
+    expect(labels('jn 3.16; jn 1:3-5')).toEqual(['John 3:16', 'John 1:3-5'])
+  })
+
+  it('still treats a period after a book name as part of the abbreviation', () => {
+    expect(labels('Jn. 3.16')).toEqual(['John 3:16'])
+    expect(labels('1 Jn. 3.1')).toEqual(['1 John 3:1'])
+    expect(labels('Jn. 3:16')).toEqual(['John 3:16'])
+  })
+
+  it('reports errors the same way with a period', () => {
+    expect(messages('mk 3.99')).toEqual(['Mark 3 has only 35 verses'])
+    expect(messages('luke 3.')).toEqual(['Incomplete reference "luke 3."'])
+    expect(messages('1 Jn.')).toEqual(['Missing chapter after "1 John"'])
+  })
 })

@@ -10,7 +10,7 @@ export type Suggestion =
 
 const NONE: Suggestion = { kind: 'none' }
 const BOOK_TEXT_RE = /^[1-3]?\s*[a-z][a-z .]*$/i
-const HINT_RE = /^(.*[a-z.])\s+(?:(\d+)(:\d*)?)?$/i
+const HINT_RE = /^(.*[a-z.])\s+(?:(\d+)([:.]\d*)?)?$/i
 
 export function matchBooks(text: string, limit = 8): Book[] {
   const key = normalizeBookText(text)
