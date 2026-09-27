@@ -1,11 +1,70 @@
-import { app, BrowserWindow } from 'electron'
+import { app, dialog, screen, type BrowserWindow } from 'electron'
 import { join } from 'node:path'
+import { IPC } from '../shared/ipc'
+import type { DisplayInfo } from '../shared/types'
+import { BibleDb } from './bibleDb'
+import { registerIpc } from './ipc'
+import { UserDb } from './userDb'
+import { createControlWindow, createDisplayWindow, placeDisplayWindow } from './windows'
+
+let control: BrowserWindow | null = null
+let display: BrowserWindow | null = null
+let secondMonitor = false
+
+function bibleDbPath(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'bible.db')
+    : join(app.getAppPath(), 'resources', 'bible.db')
+}
+
+function displayInfo(): DisplayInfo {
+  const [width, height] = display?.getContentSize() ?? [1920, 1080]
+  return { width, height, secondMonitor }
+}
+
+function sendDisplayInfo(): void {
+  control?.webContents.send(IPC.evtDisplayInfo, displayInfo())
+}
+
+function reposition(): void {
+  if (!display) return
+  secondMonitor = placeDisplayWindow(display)
+  sendDisplayInfo()
+}
 
 app.whenReady().then(() => {
-  const win = new BrowserWindow({ width: 900, height: 600, autoHideMenuBar: true })
-  const devUrl = process.env['ELECTRON_RENDERER_URL']
-  if (devUrl) void win.loadURL(devUrl)
-  else void win.loadFile(join(__dirname, '../renderer/index.html'))
+  let bible: BibleDb
+  try {
+    bible = BibleDb.open(bibleDbPath())
+  } catch (e) {
+    dialog.showErrorBox('Bible Display', (e as Error).message)
+    app.quit()
+    return
+  }
+  const user = UserDb.open(join(app.getPath('userData'), 'user.db'))
+
+  registerIpc({ bible, user, getControl: () => control, getDisplay: () => display, displayInfo })
+
+  control = createControlWindow()
+  display = createDisplayWindow()
+  display.once('ready-to-show', reposition)
+  display.on('resize', sendDisplayInfo)
+  display.on('closed', () => {
+    display = null
+  })
+  control.on('closed', () => {
+    control = null
+    app.quit()
+  })
+
+  screen.on('display-added', reposition)
+  screen.on('display-removed', reposition)
+  screen.on('display-metrics-changed', reposition)
+
+  app.on('will-quit', () => {
+    bible.close()
+    user.close()
+  })
 })
 
 app.on('window-all-closed', () => app.quit())
