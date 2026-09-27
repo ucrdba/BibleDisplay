@@ -3,6 +3,7 @@ import { parseReferences } from '../../../shared/parser'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
 import './control.css'
+import { ImportedList } from './ImportedList'
 import { keyToAction } from './keys'
 import { PreviewPanel } from './PreviewPanel'
 import { RecentList } from './RecentList'
@@ -21,6 +22,9 @@ export function ControlScreen() {
   const [groups, setGroups] = useState<DisplayGroup[]>([])
   const [blank, setBlank] = useState(false)
   const [recent, setRecent] = useState<string[]>([])
+  const [imported, setImported] = useState<string[]>([])
+  const [activeImported, setActiveImported] = useState<number | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
   const [styles, setStyles] = useState<Styles | null>(null)
   const [fonts, setFonts] = useState<string[]>([])
   const [info, setInfo] = useState<DisplayInfo>({ width: 1920, height: 1080, secondMonitor: true })
@@ -31,6 +35,7 @@ export function ControlScreen() {
     const a = api()
     void a.getStyles().then(setStyles)
     void a.listRecent().then(setRecent)
+    void a.listImported().then(setImported)
     void a.listFonts().then(setFonts)
     void a.getDisplayInfo().then(setInfo)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
@@ -45,12 +50,13 @@ export function ControlScreen() {
     api().present({ groups: loaded, blank: nextBlank })
   }, [])
 
-  const show = async (text: string) => {
+  const show = async (text: string, recordRecent = true) => {
     if (!index) return
     const result = parseReferences(text, index)
     setErrors(result.errors)
     if (result.groups.length === 0) return
     await present(result.groups, blank)
+    if (!recordRecent) return
     await api().addRecent(text)
     setRecent(await api().listRecent())
   }
@@ -87,6 +93,37 @@ export function ControlScreen() {
     window.getSelection()?.removeAllRanges()
     await present(refGroups, blank)
   }
+
+  const importList = async () => {
+    const result = await api().importList()
+    if (result.kind === 'canceled') return
+    if (result.kind === 'error') {
+      setImportError(result.message)
+      return
+    }
+    setImportError(null)
+    setImported(result.lines)
+    setActiveImported(null)
+  }
+
+  const clearImported = async () => {
+    await api().clearImported()
+    setImported([])
+    setActiveImported(null)
+    setImportError(null)
+  }
+
+  const pickImported = (i: number) => {
+    const text = imported[i]
+    setActiveImported(i)
+    setInput(text)
+    setErrors([])
+    void show(text, false)
+  }
+
+  const importProblems = imported.map(line =>
+    index ? parseReferences(line, index).errors.map(e => e.message).join('; ') || null : null,
+  )
 
   const latest = useRef({ styles, toggleBlank, updateStyles })
   latest.current = { styles, toggleBlank, updateStyles }
@@ -135,6 +172,15 @@ export function ControlScreen() {
             </button>
           </div>
           <SelectedList groups={refGroups} onRemove={removeGroup} />
+          <ImportedList
+            items={imported}
+            problems={importProblems}
+            activeIndex={activeImported}
+            error={importError}
+            onPick={pickImported}
+            onImport={() => void importList()}
+            onClear={() => void clearImported()}
+          />
           <RecentList
             items={recent}
             onPick={text => {

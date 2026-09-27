@@ -1,7 +1,9 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { dialog, ipcMain, type BrowserWindow } from 'electron'
+import { readFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
+import { parseImportText } from '../shared/importList'
 import type { Styles } from '../shared/styles'
-import type { DisplayInfo, DisplayState, RefGroup, ScrollCommand, VerseRange } from '../shared/types'
+import type { DisplayInfo, DisplayState, ImportResult, RefGroup, ScrollCommand, VerseRange } from '../shared/types'
 import type { BibleDb } from './bibleDb'
 import { listFonts } from './fonts'
 import { loadGroups } from './loadGroups'
@@ -30,6 +32,25 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.removeHighlights, (_e, ranges: VerseRange[]) => ctx.user.removeHighlights(ranges))
   ipcMain.handle(IPC.addRecent, (_e, input: string) => ctx.user.addRecent(input))
   ipcMain.handle(IPC.listRecent, () => ctx.user.listRecent())
+  ipcMain.handle(IPC.importList, async (): Promise<ImportResult> => {
+    const options: Electron.OpenDialogOptions = {
+      title: 'Import verse list',
+      filters: [{ name: 'Text files', extensions: ['txt'] }],
+      properties: ['openFile'],
+    }
+    const parent = ctx.getControl()
+    const pick = parent ? await dialog.showOpenDialog(parent, options) : await dialog.showOpenDialog(options)
+    if (pick.canceled || pick.filePaths.length === 0) return { kind: 'canceled' }
+    try {
+      const lines = parseImportText(await readFile(pick.filePaths[0], 'utf8'))
+      ctx.user.setImported(lines)
+      return { kind: 'ok', lines }
+    } catch (e) {
+      return { kind: 'error', message: `Could not read the file: ${(e as Error).message}` }
+    }
+  })
+  ipcMain.handle(IPC.listImported, () => ctx.user.listImported())
+  ipcMain.handle(IPC.clearImported, () => ctx.user.clearImported())
   ipcMain.handle(IPC.listFonts, () => listFonts())
   ipcMain.handle(IPC.getDisplayInfo, () => ctx.displayInfo())
   ipcMain.handle(IPC.displayReady, () => ({ state, styles: ctx.user.getStyles() }))

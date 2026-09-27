@@ -293,3 +293,21 @@ input[type='color'] {
   padding: 0;
   border: 1px solid #888;
 }
+
+.link-btn.is-active {
+  background: #e3ecfb;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.warn {
+  color: var(--error);
+  cursor: help;
+  margin-left: 4px;
+}
+
+.error-text {
+  color: var(--error);
+  font-size: 12px;
+  margin: 4px 0;
+}

@@ -9,6 +9,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Type-ahead: start typing a book; ↑/↓ to choose, Tab or Enter to accept, Esc to close.
 - **A− / A+** or **Ctrl − / Ctrl +**: text size. **PgUp/PgDn**, **↑/↓**, **Home/End**, or the mouse wheel over the preview: scroll the display. **B**: blank the display.
 - Highlight: select words in the preview, then pick a color. **Remove highlight** clears the selected part.
+- Import a list: click **Import list…** and choose a `.txt` file with one reference per line (e.g. your sermon's verses). Click a line to show it; the list stays until you import another file or click **Clear list**. Lines with problems are marked ⚠.
 
 ## Development
 

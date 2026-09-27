@@ -3,6 +3,7 @@ import type {
   DisplayGroup,
   DisplayInfo,
   DisplayState,
+  ImportResult,
   RefGroup,
   ScrollCommand,
   VerseCounts,
@@ -20,6 +21,9 @@ export interface ControlApi {
   removeHighlights(ranges: VerseRange[]): Promise<void>
   addRecent(input: string): Promise<void>
   listRecent(): Promise<string[]>
+  importList(): Promise<ImportResult>
+  listImported(): Promise<string[]>
+  clearImported(): Promise<void>
   listFonts(): Promise<string[]>
   getDisplayInfo(): Promise<DisplayInfo>
   present(state: DisplayState): void

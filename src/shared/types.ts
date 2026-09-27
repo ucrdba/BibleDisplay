@@ -89,3 +89,5 @@ export interface DisplayInfo {
   height: number
   secondMonitor: boolean
 }
+
+export type ImportResult = { kind: 'ok'; lines: string[] } | { kind: 'canceled' } | { kind: 'error'; message: string }

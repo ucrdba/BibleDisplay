@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS recent (
   input TEXT NOT NULL,
   used_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE TABLE IF NOT EXISTS imported (
+  position INTEGER PRIMARY KEY,
+  input TEXT NOT NULL
+);
 `
 
 function connect(path: string): Database.Database {
@@ -131,6 +135,23 @@ export class UserDb {
       input: string
     }[]
     return rows.map(r => r.input)
+  }
+
+  setImported(lines: string[]): void {
+    const insert = this.db.prepare('INSERT INTO imported (position, input) VALUES (?, ?)')
+    this.db.transaction(() => {
+      this.db.prepare('DELETE FROM imported').run()
+      lines.forEach((line, i) => insert.run(i, line))
+    })()
+  }
+
+  listImported(): string[] {
+    const rows = this.db.prepare('SELECT input FROM imported ORDER BY position').all() as { input: string }[]
+    return rows.map(r => r.input)
+  }
+
+  clearImported(): void {
+    this.db.prepare('DELETE FROM imported').run()
   }
 
   close(): void {
