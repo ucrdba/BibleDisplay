@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_STYLES, type Styles } from '../../../shared/styles'
 import type { DisplayState } from '../../../shared/types'
 import { VerseView } from '../verse/VerseView'
@@ -14,13 +14,17 @@ export function DisplayScreen() {
 
   useEffect(() => {
     const api = window.bible.display
-    void api.ready().then(r => {
-      setState(r.state)
-      setStyles(r.styles)
-    })
+    let gotState = false
+    let gotStyles = false
     const offs = [
-      api.onState(setState),
-      api.onStyles(setStyles),
+      api.onState(s => {
+        gotState = true
+        setState(s)
+      }),
+      api.onStyles(st => {
+        gotStyles = true
+        setStyles(st)
+      }),
       api.onScroll(cmd => {
         const el = scroller.current
         if (!el) return
@@ -33,6 +37,10 @@ export function DisplayScreen() {
         el.scrollTo({ top, behavior: cmd.kind === 'by' ? 'auto' : 'smooth' })
       }),
     ]
+    void api.ready().then(r => {
+      if (!gotState) setState(r.state)
+      if (!gotStyles) setStyles(r.styles)
+    })
     return () => offs.forEach(off => off())
   }, [])
 
