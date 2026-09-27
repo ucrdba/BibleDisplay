@@ -30,6 +30,7 @@ function SizeField({ value, onChange }: { value: number; onChange(size: number):
           const n = Number(e.target.value)
           if (Number.isInteger(n) && n >= 8 && n <= 200) onChange(n)
         }}
+        onBlur={() => setDraft(String(value))}
       />
     </label>
   )
