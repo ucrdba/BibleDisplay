@@ -1,7 +1,7 @@
 {
   "name": "bible-display",
   "productName": "BibleDisplay",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "Show Bible verses on a second monitor",
   "author": "Landmark Missionary Church of Banning CA",
