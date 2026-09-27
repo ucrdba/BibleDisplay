@@ -13,7 +13,8 @@
     "test": "cross-env ELECTRON_RUN_AS_NODE=1 electron node_modules/vitest/vitest.mjs run",
     "test:watch": "cross-env ELECTRON_RUN_AS_NODE=1 electron node_modules/vitest/vitest.mjs",
     "import-kjv": "esbuild data/import-kjv.ts --bundle --platform=node --format=cjs --external:better-sqlite3 --outfile=out/import-kjv.cjs && cross-env ELECTRON_RUN_AS_NODE=1 electron out/import-kjv.cjs",
-    "postinstall": "electron-rebuild -f -w better-sqlite3"
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "dist": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -28,6 +29,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "cross-env": "^10.1.0",
     "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "esbuild": "^0.28.2",
     "jsdom": "^30.1.1",
@@ -40,6 +42,21 @@
   "allowScripts": {
     "better-sqlite3@13.0.3": true,
     "esbuild@0.25.12": true,
-    "esbuild@0.28.2": true
+    "esbuild@0.28.2": true,
+    "electron-winstaller@5.4.0": true
+  },
+  "build": {
+    "appId": "com.local.bibledisplay",
+    "productName": "BibleDisplay",
+    "directories": { "output": "release" },
+    "files": [
+      "!**/.vscode/*",
+      "!{src,data,tests,docs,resources,.superpowers,release}/**",
+      "!{tsconfig.json,electron.vite.config.ts,vitest.config.ts,README.md}"
+    ],
+    "extraResources": [{ "from": "resources/bible.db", "to": "bible.db" }],
+    "asarUnpack": ["**/*.node"],
+    "win": { "target": "nsis" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
   }
 }
