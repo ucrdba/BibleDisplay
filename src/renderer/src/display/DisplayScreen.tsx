@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_STYLES, type Styles } from '../../../shared/styles'
 import type { DisplayState } from '../../../shared/types'
 import { VerseView } from '../verse/VerseView'
