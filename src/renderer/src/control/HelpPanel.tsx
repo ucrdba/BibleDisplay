@@ -16,7 +16,11 @@ export function HelpPanel({ version, onClose }: Props) {
     >
       <div className="help-panel">
         <h2>Help</h2>
-        <p className="muted">Bible Display — version {version}</p>
+        <p className="muted">
+          Bible Display — version {version}
+          <br />© 2026 Landmark Missionary Church of Banning CA. Free to install, use, and share; may not be sold.
+          See LICENSE.txt. The King James Version text is in the public domain.
+        </p>
         <button type="button" className="icon-btn help-close" aria-label="Close help" autoFocus onClick={onClose}>
           ✕
         </button>

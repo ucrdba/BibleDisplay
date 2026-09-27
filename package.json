@@ -4,6 +4,8 @@
   "version": "0.1.5",
   "private": true,
   "description": "Show Bible verses on a second monitor",
+  "author": "Landmark Missionary Church of Banning CA",
+  "license": "SEE LICENSE IN LICENSE.txt",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -51,6 +53,7 @@
   "build": {
     "appId": "com.local.bibledisplay",
     "productName": "BibleDisplay",
+    "copyright": "Copyright © 2026 Landmark Missionary Church of Banning CA",
     "directories": {
       "output": "release"
     },
@@ -67,6 +70,10 @@
       {
         "from": "resources/icon.png",
         "to": "icon.png"
+      },
+      {
+        "from": "LICENSE.txt",
+        "to": "LICENSE.txt"
       }
     ],
     "asarUnpack": [
@@ -78,7 +85,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "license": "LICENSE.txt"
     }
   }
 }

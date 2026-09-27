@@ -15,4 +15,11 @@ describe('HelpPanel', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Bible Display — version 1.2.3')
   })
+
+  it('shows the copyright and license terms', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    expect(out).toContain('© 2026 Landmark Missionary Church of Banning CA')
+    expect(out).toContain('may not be sold')
+    expect(out).toContain('public domain')
+  })
 })

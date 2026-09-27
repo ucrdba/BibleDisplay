@@ -1,0 +1,27 @@
+Bible Display
+Copyright (c) 2026 Landmark Missionary Church of Banning CA. All rights reserved.
+
+Permission is granted, free of charge, to any person or organization to install,
+use, copy, and distribute this software, subject to the following conditions:
+
+1. No sale. You may not sell, rent, or charge any fee for this software, and you
+   may not include it in any product, package, or service that is sold.
+
+2. Keep this notice. Every copy you distribute must include this license and the
+   copyright notice above, unchanged.
+
+3. No modified versions. This license does not permit you to modify the software
+   or to distribute modified versions of it.
+
+The King James Version Bible text included with this software is in the public
+domain and is not covered by this license.
+
+This software includes third-party components (such as Electron) that remain
+under their own licenses.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

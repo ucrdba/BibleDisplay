@@ -16,6 +16,10 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - **Display on** (right panel): pick which monitor shows the verses; your choice is remembered.
 - **F1** or **? Help**: shows how to use everything.
 
+## License
+
+Copyright © 2026 Landmark Missionary Church of Banning CA. Free to install, use, copy, and share; may not be sold or modified. See [LICENSE.txt](LICENSE.txt). The King James Version text is in the public domain.
+
 ## Development
 
 ```bash
