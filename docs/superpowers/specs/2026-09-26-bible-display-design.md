@@ -1,0 +1,199 @@
+# Bible Display — Design Spec
+
+**Date:** 2026-09-26
+**Status:** Approved in brainstorming; awaiting written-spec review
+
+## 1. Purpose
+
+A Windows desktop app for showing Bible verses on a second monitor. The operator types one or more
+references (e.g. `jn 1:3-5, mk 3:1-3, luke 1:2`) on the control window; every selected verse appears
+together on the second monitor, with reference headings, verse numbers, Jesus' words in red, and
+operator-chosen fonts, sizes, colors, and saved word highlights.
+
+## 2. Scope
+
+**In scope**
+- KJV only (public domain), with red-letter (words of Jesus) markup.
+- Multiple references and ranges in one input, book abbreviations, type-ahead for book names.
+- All selected verses shown at once on the display; display scrolls when text exceeds the screen.
+- Global styles (font/size/color per text element, background) editable in a GUI.
+- User word highlights (custom colors) saved in a database.
+
+**Out of scope**
+- Other translations, copyrighted versions.
+- Network/remote displays (display is a second monitor on the same PC).
+- One-verse-per-slide paging, named style presets/themes.
+
+## 3. Architecture
+
+**Stack:** Electron + React + TypeScript, built with electron-vite. SQLite via `better-sqlite3`.
+Tests with Vitest.
+
+**Processes and windows**
+- **Main process (Node):** owns both databases and all persisted settings; creates and manages two
+  windows; relays messages between them.
+  - **Control window** — opens on the primary monitor; layout A (three panels, §6).
+  - **Display window** — frameless, fullscreen on the first non-primary monitor, detected via
+    Electron's `screen` API. If only one monitor exists, it opens as a normal resizable window.
+    On `display-added` / `display-removed` events the window is moved to the correct monitor.
+- **Renderer:** a single React bundle with two routes, `#/control` and `#/display`. The display
+  route renders verses only — no controls.
+- **IPC:** a `preload` script exposes a typed API via `contextBridge`. The control window sends
+  `show(references)`, `clear()`, `setStyles(styles)`, `scroll(command)`, `setBlank(bool)`; the main
+  process persists what needs persisting and forwards display-relevant state to the display
+  window. Style changes apply live.
+
+**Folder layout**
+```
+BibleDisplay/
+  src/main/        window management, IPC handlers, database access
+  src/preload/     contextBridge API
+  src/shared/      reference parser, type-ahead, book table, span merging, types (pure, tested)
+  src/renderer/    React: control/ and display/ screens, shared VerseView component
+  data/            KJV source + import script → bible.db
+  tests/
+```
+
+## 4. Data
+
+### 4.1 Database files
+- **`bible.db`** — bundled with the app, read-only. KJV text and red-letter spans.
+- **`user.db`** — in the app's userData folder (`%APPDATA%\BibleDisplay`). Styles, highlights,
+  recent inputs. Survives reinstall/updates.
+
+### 4.2 KJV source and import
+A one-time, re-runnable import script (`data/import-kjv.ts`) builds `bible.db` from a public-domain
+KJV source that marks words of Jesus. Intended source: eBible.org KJV USFM, which wraps them in
+`\wj … \wj*`. The first implementation task verifies that the source's red-letter markup is complete
+(spot-check the Gospels, Acts 1, Revelation 1–3) before relying on it; if it is not, choose a
+different public-domain red-letter KJV source.
+
+### 4.3 Schema
+
+`bible.db`
+| Table | Columns |
+|---|---|
+| `books` | `id` (1–66, canonical order), `name`, `abbrev3` (unique), `chapters` |
+| `book_aliases` | `alias` (lowercase, unique), `book_id` |
+| `verses` | `book_id`, `chapter`, `verse`, `text` — PK (`book_id`,`chapter`,`verse`) |
+| `red_letter` | `book_id`, `chapter`, `verse`, `start`, `end` (character offsets into `text`, end exclusive) |
+
+`user.db`
+| Table | Columns |
+|---|---|
+| `highlights` | `id`, `book_id`, `chapter`, `verse`, `start`, `end`, `color`, `created_at` |
+| `settings` | `key`, `value` (JSON) — holds the styles object |
+| `recent` | `id`, `input`, `used_at` — last 20 inputs kept |
+
+A highlight spanning several verses is stored as one row per verse.
+
+### 4.4 Color precedence
+When rendering a verse, the text is split into segments by merging span sets. Color precedence,
+highest first: **user highlight → red letter → normal verse-text color**. A highlight overlapping a
+red-letter range recolors only the overlapping characters.
+
+## 5. Reference parsing
+
+Pure function in `src/shared/parser.ts`: `parse(input) → { groups: RefGroup[], errors: RefError[] }`.
+
+**Book matching** (case-insensitive, whitespace-tolerant):
+1. Exact full name (`genesis`).
+2. Standard 3-letter code (`gen`, `exo`, `mat`, `mar`, `luk`, `joh`).
+3. Alias table (`jn`, `mk`, `mt`, `lk`, `ps`, `rom`, …).
+4. Numbered books in several spellings (`1 john`, `1john`, `1jn`, `1 joh`).
+5. Otherwise, a unique prefix of a full name (`phile` → Philemon). An ambiguous prefix
+   (`jo` → Job, Joel, John, Jonah, Joshua) is an error listing the candidates.
+
+**Forms**
+| Form | Example | Meaning |
+|---|---|---|
+| Single verse | `jn 3:16` | John 3:16 |
+| Range | `jn 1:3-5` | John 1:3–5 |
+| Whole chapter | `ps 23` | Psalm 23, all verses |
+| Range across chapters | `jn 1:50-2:3` | John 1:50 through 2:3 |
+| List | `jn 1:3-5, mk 3:1-3; luke 1:2` | Items separated by `,` or `;` |
+| Book carries over | `jn 3:16, 18` | John 3:16 and John 3:18 (a bare number after a verse reference is a verse in the same chapter) |
+
+**Errors are per item.** Valid items are still displayed; invalid items are reported with the
+character range in the input and a reason, e.g. `Unknown book "xyz"`, `Mark 3 has only 35 verses`,
+`"jo" matches Job, Joel, John, Jonah, Joshua`.
+
+Each list item becomes one **RefGroup** with a heading label (e.g. "John 1:3-5") and its verses.
+
+## 6. Control window (layout A)
+
+### 6.1 Left panel — selection
+- Reference input. **Enter** or **Show** sends to the display; **Clear** empties the display.
+- Invalid items are underlined in the input with the reason on hover/below.
+- **Selected** list: one row per RefGroup, each with ✕ to remove it from the display.
+- **Recent** list: last 20 inputs, persisted; clicking one re-shows it.
+
+### 6.2 Type-ahead
+Pure function in `src/shared/suggest.ts`: `suggest(input, caret) → Suggestion[] | Hint`.
+- Operates only on the current item (text after the last `,` or `;` before the caret).
+- While typing a book: dropdown of books whose full name, 3-letter code, or alias **starts with**
+  the typed text, listed in canonical order with their code, e.g. `l` → Leviticus (Lev),
+  Lamentations (Lam), Luke (Luk); `1` → 1 Samuel … 1 John; `jn` → John.
+- **↑/↓** move, **Tab** or **Enter** or click accepts (inserts full book name + space), **Esc**
+  closes. When the dropdown is closed, **Enter** means Show.
+- After a book: gray hint `24 chapters`; after `Luke 1:`: gray hint `80 verses`.
+
+### 6.3 Middle panel — live preview
+- Renders the same `VerseView` component as the display, scaled to fit, matching the second
+  monitor's aspect ratio, current styles, and scroll position.
+- Scrolling: mouse wheel over preview, **PgUp/PgDn**, **↑/↓** (when input not focused),
+  **Home/End**. Scroll commands drive the display; preview mirrors it.
+- Highlighting: drag-select words in the preview, then use the highlight tools in the right panel.
+
+### 6.4 Right panel — styles
+| Element | Font | Size | Color | Other |
+|---|---|---|---|---|
+| Reference heading | ✓ | ✓ | ✓ | bold on/off |
+| Verse text | ✓ | ✓ | ✓ | |
+| Jesus' words | | | ✓ | |
+| Verse numbers | | | ✓ | show/hide |
+| Background | | | ✓ | |
+
+- Font dropdowns list installed system fonts.
+- Color pickers: row of quick swatches + full picker.
+- **A− / A+** (and `Ctrl −` / `Ctrl +`) apply a global scale to all display text.
+- Layout toggle: verses flow as a paragraph / each verse on its own line.
+- Highlight tools: color swatches (apply to current preview selection, saved to `highlights`) and
+  **Remove highlight** (removes highlight ranges within the selection).
+- **Blank** toggle (also **B** key when input not focused): display shows background only; the
+  selection is retained.
+- All changes apply live and persist automatically.
+
+## 7. Display window
+- Fullscreen, frameless, no UI. For each RefGroup: heading, then verses with superscript verse
+  numbers (if enabled), colored per §4.4.
+- Scrolls smoothly when content exceeds the screen height; the operator's size setting is never
+  reduced to fit.
+
+## 8. Error handling
+- **Bad references:** per-item errors (§5); the display keeps its last good content if nothing
+  valid was entered.
+- **No second monitor:** display opens windowed on the primary screen; control window shows a
+  banner "No second monitor detected". Hot-plugging moves the display automatically.
+- **Missing font:** display falls back to Georgia; the dropdown shows the saved font as
+  "(missing)".
+- **`bible.db` missing/corrupt:** startup error dialog with a clear message; app does not open a
+  blank display.
+- **`user.db` missing:** recreated with default styles. **Corrupt:** renamed to `user.db.bad`, fresh
+  one created.
+- **Stale highlights:** a highlight whose range exceeds its verse's text length is ignored at
+  render time.
+
+## 9. Testing
+TDD with Vitest.
+- **Parser:** every form in §5, carry-over, numbered books, ambiguous and unknown books,
+  out-of-range chapters/verses, extra whitespace, mixed separators, partial-error inputs.
+- **Type-ahead:** `l`, `1`, `1 c`, `jn`, current-item-after-comma, caret mid-string, no match,
+  chapter/verse hints.
+- **Book table:** 66 books, unique `abbrev3`, no alias mapped to two books.
+- **Span merging:** highlight/red-letter/normal precedence, overlaps, adjacency, empty spans.
+- **Database layer:** against a small fixture DB — fetch verses, add/remove highlights (including
+  multi-verse), save/load styles, recent-list trimming.
+- **Import script:** 31,102 verses total; red-letter present in John 3:16 and Mark 3:3, absent in
+  John 1:1.
+- **Manual:** two-monitor run — live styling, scrolling, highlights, Blank toggle, hot-plug.
