@@ -1,0 +1,31 @@
+.verse-view {
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 2.5% 5%;
+}
+
+.verse-group + .verse-group {
+  margin-top: 0.8em;
+}
+
+.verse-heading {
+  margin: 0 0 0.2em;
+  line-height: 1.2;
+}
+
+.verse-body {
+  line-height: 1.4;
+}
+
+.verse-body--lines .verse {
+  display: block;
+  margin-bottom: 0.2em;
+}
+
+.verse-num {
+  font-size: 0.55em;
+  font-weight: 400;
+  line-height: 0;
+  margin-right: 0.15em;
+  vertical-align: super;
+}

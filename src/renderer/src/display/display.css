@@ -1,0 +1,10 @@
+.display {
+  height: 100vh;
+  overflow-y: auto;
+  cursor: none;
+  scrollbar-width: none;
+}
+
+.display::-webkit-scrollbar {
+  display: none;
+}
