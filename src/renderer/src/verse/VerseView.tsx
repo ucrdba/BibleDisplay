@@ -42,6 +42,7 @@ export function VerseView({ groups, styles, blank }: Props) {
     fontSize: styles.heading.size * scale,
     color: styles.heading.color,
     fontWeight: styles.heading.bold ? 700 : 400,
+    background: styles.background,
   }
   const bodyStyle: CSSProperties = {
     fontFamily: fontStack(styles.verse.font),
