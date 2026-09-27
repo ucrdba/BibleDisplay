@@ -10,6 +10,18 @@ function load(win: BrowserWindow, route: 'control' | 'display'): void {
   else void win.loadFile(join(__dirname, '../renderer/index.html'), { hash: `/${route}` })
 }
 
+/**
+ * Prevents the window from ever navigating away from the app's own page (e.g. a file or
+ * link dropped onto the window) and prevents window.open()/target=_blank from opening new
+ * windows. `will-navigate` is not emitted for same-document reloads (including electron-vite's
+ * dev-mode HMR, which reloads via location.reload()), only for navigation to a new document,
+ * so this does not interfere with `npm run dev` hot reload.
+ */
+function lockNavigation(win: BrowserWindow): void {
+  win.webContents.on('will-navigate', e => e.preventDefault())
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+}
+
 export function createControlWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1400,
@@ -18,6 +30,7 @@ export function createControlWindow(): BrowserWindow {
     autoHideMenuBar: true,
     webPreferences: { preload: PRELOAD },
   })
+  lockNavigation(win)
   load(win, 'control')
   return win
 }
@@ -33,6 +46,7 @@ export function createDisplayWindow(): BrowserWindow {
     frame: false,
     webPreferences: { preload: PRELOAD },
   })
+  lockNavigation(win)
   load(win, 'display')
   return win
 }

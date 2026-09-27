@@ -1,4 +1,4 @@
-import { app, dialog, screen, type BrowserWindow } from 'electron'
+import { app, dialog, Menu, screen, type BrowserWindow } from 'electron'
 import { join } from 'node:path'
 import { IPC } from '../shared/ipc'
 import type { DisplayInfo } from '../shared/types'
@@ -32,39 +32,62 @@ function reposition(): void {
   sendDisplayInfo()
 }
 
-app.whenReady().then(() => {
-  let bible: BibleDb
-  try {
-    bible = BibleDb.open(bibleDbPath())
-  } catch (e) {
-    dialog.showErrorBox('Bible Display', (e as Error).message)
-    app.quit()
-    return
-  }
-  const user = UserDb.open(join(app.getPath('userData'), 'user.db'))
-
-  registerIpc({ bible, user, getControl: () => control, getDisplay: () => display, displayInfo })
-
-  control = createControlWindow()
-  display = createDisplayWindow()
-  display.once('ready-to-show', reposition)
-  display.on('resize', sendDisplayInfo)
-  display.on('closed', () => {
-    display = null
-  })
-  control.on('closed', () => {
-    control = null
-    app.quit()
+if (!app.requestSingleInstanceLock()) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    if (control) {
+      if (control.isMinimized()) control.restore()
+      control.focus()
+    }
   })
 
-  screen.on('display-added', reposition)
-  screen.on('display-removed', reposition)
-  screen.on('display-metrics-changed', reposition)
+  app.whenReady().then(() => {
+    Menu.setApplicationMenu(null)
 
-  app.on('will-quit', () => {
-    bible.close()
-    user.close()
+    let bible: BibleDb
+    try {
+      bible = BibleDb.open(bibleDbPath())
+    } catch (e) {
+      dialog.showErrorBox('Bible Display', (e as Error).message)
+      app.quit()
+      return
+    }
+
+    let user: UserDb
+    try {
+      user = UserDb.open(join(app.getPath('userData'), 'user.db'))
+    } catch (e) {
+      const message = (e as Error).message
+      dialog.showErrorBox('Bible Display', `Could not open your settings database: ${message}`)
+      bible.close()
+      app.quit()
+      return
+    }
+
+    registerIpc({ bible, user, getControl: () => control, getDisplay: () => display, displayInfo })
+
+    control = createControlWindow()
+    display = createDisplayWindow()
+    display.once('ready-to-show', reposition)
+    display.on('resize', sendDisplayInfo)
+    display.on('closed', () => {
+      display = null
+    })
+    control.on('closed', () => {
+      control = null
+      app.quit()
+    })
+
+    screen.on('display-added', reposition)
+    screen.on('display-removed', reposition)
+    screen.on('display-metrics-changed', reposition)
+
+    app.on('will-quit', () => {
+      bible.close()
+      user.close()
+    })
   })
-})
 
-app.on('window-all-closed', () => app.quit())
+  app.on('window-all-closed', () => app.quit())
+}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { parseReferences } from '../../../shared/parser'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
@@ -64,6 +64,7 @@ export function ControlScreen() {
   const clear = () => {
     setInput('')
     setErrors([])
+    setActiveImported(null)
     void present([], blank)
   }
 
@@ -121,8 +122,12 @@ export function ControlScreen() {
     void show(text, false)
   }
 
-  const importProblems = imported.map(line =>
-    index ? parseReferences(line, index).errors.map(e => e.message).join('; ') || null : null,
+  const importProblems = useMemo(
+    () =>
+      imported.map(line =>
+        index ? parseReferences(line, index).errors.map(e => e.message).join('; ') || null : null,
+      ),
+    [imported, index],
   )
 
   const latest = useRef({ styles, toggleBlank, updateStyles })
@@ -186,6 +191,7 @@ export function ControlScreen() {
             onPick={text => {
               setInput(text)
               setErrors([])
+              setActiveImported(null)
               void show(text)
             }}
           />

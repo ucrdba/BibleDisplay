@@ -1,7 +1,7 @@
 import { dialog, ipcMain, type BrowserWindow } from 'electron'
 import { readFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
-import { parseImportText } from '../shared/importList'
+import { decodeTextFile, IMPORT_MAX_BYTES, parseImportText } from '../shared/importList'
 import type { Styles } from '../shared/styles'
 import type { DisplayInfo, DisplayState, ImportResult, RefGroup, ScrollCommand, VerseRange } from '../shared/types'
 import type { BibleDb } from './bibleDb'
@@ -42,7 +42,14 @@ export function registerIpc(ctx: MainContext): void {
     const pick = parent ? await dialog.showOpenDialog(parent, options) : await dialog.showOpenDialog(options)
     if (pick.canceled || pick.filePaths.length === 0) return { kind: 'canceled' }
     try {
-      const lines = parseImportText(await readFile(pick.filePaths[0], 'utf8'))
+      const buf = await readFile(pick.filePaths[0])
+      if (buf.byteLength > IMPORT_MAX_BYTES) {
+        return {
+          kind: 'error',
+          message: 'That file is too large (over 1 MB). A verse list should be a small text file.',
+        }
+      }
+      const lines = parseImportText(decodeTextFile(buf))
       ctx.user.setImported(lines)
       return { kind: 'ok', lines }
     } catch (e) {

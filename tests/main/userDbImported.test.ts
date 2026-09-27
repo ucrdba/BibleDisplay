@@ -1,3 +1,4 @@
+import Database from 'better-sqlite3'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -54,6 +55,39 @@ describe('UserDb imported list', () => {
     db.addRecent('mk 3:3')
     db.setImported(['jn 3:16'])
     db.clearImported()
+    expect(db.listRecent()).toEqual(['mk 3:3'])
+  })
+
+  it('adds the imported table to a user.db from before it existed, without disturbing old data', () => {
+    const path = newPath()
+    // Pre-Task-17 schema: settings, highlights, recent only — no `imported` table.
+    const legacy = new Database(path)
+    legacy.exec(`
+      CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS highlights (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        book_id INTEGER NOT NULL,
+        chapter INTEGER NOT NULL,
+        verse INTEGER NOT NULL,
+        start_pos INTEGER NOT NULL,
+        end_pos INTEGER NOT NULL,
+        color TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX IF NOT EXISTS highlights_verse ON highlights (book_id, chapter, verse);
+      CREATE TABLE IF NOT EXISTS recent (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        input TEXT NOT NULL,
+        used_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `)
+    legacy.prepare('INSERT INTO recent (input) VALUES (?)').run('mk 3:3')
+    legacy.close()
+
+    const db = open(path)
+    expect(db.listImported()).toEqual([])
+    db.setImported(['jn 3:16'])
+    expect(db.listImported()).toEqual(['jn 3:16'])
     expect(db.listRecent()).toEqual(['mk 3:3'])
   })
 })

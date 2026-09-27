@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { IMPORT_LIMIT, parseImportText } from '../../src/shared/importList'
+import { decodeTextFile, IMPORT_LIMIT, IMPORT_MAX_BYTES, parseImportText } from '../../src/shared/importList'
 
 describe('parseImportText', () => {
   it('returns one trimmed line per non-blank line, in order', () => {
@@ -25,5 +25,42 @@ describe('parseImportText', () => {
     expect(IMPORT_LIMIT).toBe(500)
     expect(lines).toHaveLength(500)
     expect(lines[499]).toBe('ps 500')
+  })
+})
+
+describe('IMPORT_MAX_BYTES', () => {
+  it('is 1 MB', () => {
+    expect(IMPORT_MAX_BYTES).toBe(1_048_576)
+  })
+})
+
+describe('decodeTextFile', () => {
+  const TEXT = 'jn 3:16\r\nps 23'
+  const EXPECTED = ['jn 3:16', 'ps 23']
+
+  it('decodes UTF-8 without a BOM', () => {
+    const buf = Buffer.from(TEXT, 'utf8')
+    expect(parseImportText(decodeTextFile(buf))).toEqual(EXPECTED)
+  })
+
+  it('decodes UTF-8 with a BOM', () => {
+    const buf = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(TEXT, 'utf8')])
+    expect(parseImportText(decodeTextFile(buf))).toEqual(EXPECTED)
+  })
+
+  it('decodes UTF-16LE with a BOM', () => {
+    const buf = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(TEXT, 'utf16le')])
+    expect(parseImportText(decodeTextFile(buf))).toEqual(EXPECTED)
+  })
+
+  it('decodes UTF-16BE with a BOM', () => {
+    const le = Buffer.from(TEXT, 'utf16le')
+    const be = Buffer.alloc(le.length)
+    for (let i = 0; i < le.length; i += 2) {
+      be[i] = le[i + 1]
+      be[i + 1] = le[i]
+    }
+    const buf = Buffer.concat([Buffer.from([0xfe, 0xff]), be])
+    expect(parseImportText(decodeTextFile(buf))).toEqual(EXPECTED)
   })
 })
