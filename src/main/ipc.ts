@@ -32,6 +32,7 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.removeHighlights, (_e, ranges: VerseRange[]) => ctx.user.removeHighlights(ranges))
   ipcMain.handle(IPC.addRecent, (_e, input: string) => ctx.user.addRecent(input))
   ipcMain.handle(IPC.listRecent, () => ctx.user.listRecent())
+  ipcMain.handle(IPC.removeRecent, (_e, inputs: string[]) => ctx.user.removeRecent(inputs))
   ipcMain.handle(IPC.importList, async (): Promise<ImportResult> => {
     const options: Electron.OpenDialogOptions = {
       title: 'Import verse list',
@@ -58,6 +59,7 @@ export function registerIpc(ctx: MainContext): void {
   })
   ipcMain.handle(IPC.listImported, () => ctx.user.listImported())
   ipcMain.handle(IPC.clearImported, () => ctx.user.clearImported())
+  ipcMain.handle(IPC.removeImported, (_e, indices: number[]) => ctx.user.removeImported(indices))
   ipcMain.handle(IPC.listFonts, () => listFonts())
   ipcMain.handle(IPC.getDisplayInfo, () => ctx.displayInfo())
   ipcMain.handle(IPC.displayReady, () => ({ state, styles: ctx.user.getStyles() }))

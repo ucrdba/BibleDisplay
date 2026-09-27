@@ -21,9 +21,11 @@ export interface ControlApi {
   removeHighlights(ranges: VerseRange[]): Promise<void>
   addRecent(input: string): Promise<void>
   listRecent(): Promise<string[]>
+  removeRecent(inputs: string[]): Promise<void>
   importList(): Promise<ImportResult>
   listImported(): Promise<string[]>
   clearImported(): Promise<void>
+  removeImported(indices: number[]): Promise<void>
   listFonts(): Promise<string[]>
   getDisplayInfo(): Promise<DisplayInfo>
   present(state: DisplayState): void

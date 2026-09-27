@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type ListSelection } from '../../../shared/listSelection'
 import { parseReferences } from '../../../shared/parser'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
@@ -8,6 +9,7 @@ import { keyToAction } from './keys'
 import { PreviewPanel } from './PreviewPanel'
 import { RecentList } from './RecentList'
 import { ReferenceInput } from './ReferenceInput'
+import type { ClickMods } from './SelectableList'
 import { SelectedList } from './SelectedList'
 import { StylePanel } from './StylePanel'
 import { useBibleIndex } from './useBibleIndex'
@@ -23,13 +25,20 @@ export function ControlScreen() {
   const [blank, setBlank] = useState(false)
   const [recent, setRecent] = useState<string[]>([])
   const [imported, setImported] = useState<string[]>([])
-  const [activeImported, setActiveImported] = useState<number | null>(null)
+  const [listSel, setListSel] = useState<{ list: 'imported' | 'recent'; sel: ListSelection }>({
+    list: 'imported',
+    sel: EMPTY_SELECTION,
+  })
   const [importError, setImportError] = useState<string | null>(null)
   const [styles, setStyles] = useState<Styles | null>(null)
   const [fonts, setFonts] = useState<string[]>([])
   const [info, setInfo] = useState<DisplayInfo>({ width: 1920, height: 1080, secondMonitor: true })
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
+
+  const importedSelected = listSel.list === 'imported' ? listSel.sel.selected : []
+  const recentSelected = listSel.list === 'recent' ? listSel.sel.selected : []
+  const resetListSel = () => setListSel({ list: 'imported', sel: EMPTY_SELECTION })
 
   useEffect(() => {
     const a = api()
@@ -57,6 +66,7 @@ export function ControlScreen() {
     if (result.groups.length === 0) return
     await present(result.groups, blank)
     if (!recordRecent) return
+    resetListSel()
     await api().addRecent(text)
     setRecent(await api().listRecent())
   }
@@ -64,7 +74,7 @@ export function ControlScreen() {
   const clear = () => {
     setInput('')
     setErrors([])
-    setActiveImported(null)
+    resetListSel()
     void present([], blank)
   }
 
@@ -102,24 +112,45 @@ export function ControlScreen() {
       setImportError(result.message)
       return
     }
+    resetListSel()
     setImportError(null)
     setImported(result.lines)
-    setActiveImported(null)
   }
 
   const clearImported = async () => {
     await api().clearImported()
     setImported([])
-    setActiveImported(null)
+    resetListSel()
     setImportError(null)
   }
 
-  const pickImported = (i: number) => {
-    const text = imported[i]
-    setActiveImported(i)
+  type ListName = 'imported' | 'recent'
+  const itemsOf = (list: ListName) => (list === 'imported' ? imported : recent)
+  const baseSel = (list: ListName) => (listSel.list === list ? listSel.sel : EMPTY_SELECTION)
+
+  const clickList = (list: ListName, index: number, mods: ClickMods) => {
+    const next = clickSelection(baseSel(list), index, mods)
+    setListSel({ list, sel: next })
+    if (next.selected.length === 0) return
+    const text = joinSelected(itemsOf(list), next.selected)
     setInput(text)
     setErrors([])
     void show(text, false)
+  }
+
+  const contextList = (list: ListName, index: number) => setListSel({ list, sel: contextSelection(baseSel(list), index) })
+
+  const deleteFromList = async (list: ListName) => {
+    const sel = baseSel(list).selected
+    if (sel.length === 0) return
+    if (list === 'imported') {
+      await api().removeImported(sel)
+      setImported(await api().listImported())
+    } else {
+      await api().removeRecent(sel.map(i => recent[i]))
+      setRecent(await api().listRecent())
+    }
+    setListSel({ list, sel: EMPTY_SELECTION })
   }
 
   const importProblems = useMemo(
@@ -183,20 +214,20 @@ export function ControlScreen() {
           <ImportedList
             items={imported}
             problems={importProblems}
-            activeIndex={activeImported}
+            selected={importedSelected}
             error={importError}
-            onPick={pickImported}
+            onClick={(i, mods) => clickList('imported', i, mods)}
+            onContext={i => contextList('imported', i)}
+            onDelete={() => void deleteFromList('imported')}
             onImport={() => void importList()}
             onClear={() => void clearImported()}
           />
           <RecentList
             items={recent}
-            onPick={text => {
-              setInput(text)
-              setErrors([])
-              setActiveImported(null)
-              void show(text)
-            }}
+            selected={recentSelected}
+            onClick={(i, mods) => clickList('recent', i, mods)}
+            onContext={i => contextList('recent', i)}
+            onDelete={() => void deleteFromList('recent')}
           />
         </aside>
 

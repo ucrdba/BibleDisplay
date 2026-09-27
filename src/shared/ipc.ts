@@ -10,6 +10,8 @@ export const IPC = {
   importList: 'imported:import',
   listImported: 'imported:list',
   clearImported: 'imported:clear',
+  removeImported: 'imported:remove',
+  removeRecent: 'recent:remove',
   listFonts: 'fonts:list',
   getDisplayInfo: 'display:get-info',
   present: 'display:present',

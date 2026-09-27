@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { existsSync, renameSync, rmSync } from 'node:fs'
+import { removeIndices } from '../shared/listSelection'
 import { normalizeStyles, type Styles } from '../shared/styles'
 import type { Highlight, VerseRange, VerseSpan } from '../shared/types'
 
@@ -152,6 +153,17 @@ export class UserDb {
 
   clearImported(): void {
     this.db.prepare('DELETE FROM imported').run()
+  }
+
+  removeImported(indices: number[]): void {
+    this.setImported(removeIndices(this.listImported(), indices))
+  }
+
+  removeRecent(inputs: string[]): void {
+    const del = this.db.prepare('DELETE FROM recent WHERE input = ?')
+    this.db.transaction(() => {
+      for (const input of inputs) del.run(input)
+    })()
   }
 
   close(): void {

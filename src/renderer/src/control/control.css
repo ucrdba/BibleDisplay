@@ -317,3 +317,45 @@ input[type='color'] {
   margin-top: 14px;
   padding-top: 10px;
 }
+
+.selectable {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  user-select: none;
+}
+
+.selectable li {
+  display: flex;
+  align-items: center;
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 30;
+  min-width: 140px;
+  padding: 2px 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-menu button:hover,
+.context-menu button:focus {
+  background: var(--accent);
+  color: #fff;
+  outline: none;
+}

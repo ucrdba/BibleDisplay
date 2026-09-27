@@ -91,3 +91,21 @@ describe('UserDb imported list', () => {
     expect(db.listRecent()).toEqual(['mk 3:3'])
   })
 })
+
+describe('UserDb removing entries', () => {
+  it('removes imported rows by index and keeps the rest in order', () => {
+    const db = open(newPath())
+    db.setImported(['a', 'b', 'c', 'd'])
+    db.removeImported([1, 3])
+    expect(db.listImported()).toEqual(['a', 'c'])
+    db.removeImported([])
+    expect(db.listImported()).toEqual(['a', 'c'])
+  })
+
+  it('removes recent entries by text', () => {
+    const db = open(newPath())
+    for (const s of ['jn 3:16', 'ps 23', 'rom 8:28']) db.addRecent(s)
+    db.removeRecent(['ps 23', 'not there'])
+    expect(db.listRecent()).toEqual(['rom 8:28', 'jn 3:16'])
+  })
+})

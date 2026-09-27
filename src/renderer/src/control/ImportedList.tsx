@@ -1,14 +1,19 @@
+import type { ClickMods } from './SelectableList'
+import { SelectableList } from './SelectableList'
+
 interface Props {
   items: string[]
   problems: (string | null)[]
-  activeIndex: number | null
+  selected: number[]
   error: string | null
-  onPick(index: number): void
+  onClick(index: number, mods: ClickMods): void
+  onContext(index: number): void
+  onDelete(): void
   onImport(): void
   onClear(): void
 }
 
-export function ImportedList({ items, problems, activeIndex, error, onPick, onImport, onClear }: Props) {
+export function ImportedList({ items, problems, selected, error, onClick, onContext, onDelete, onImport, onClear }: Props) {
   return (
     <section className="list">
       <h3 className="panel__title">Imported</h3>
@@ -24,25 +29,7 @@ export function ImportedList({ items, problems, activeIndex, error, onPick, onIm
       {items.length === 0 ? (
         <p className="muted">No list imported</p>
       ) : (
-        <ul>
-          {items.map((item, i) => (
-            <li key={i}>
-              <button
-                type="button"
-                className={i === activeIndex ? 'link-btn is-active' : 'link-btn'}
-                title={`Show ${item}`}
-                onClick={() => onPick(i)}
-              >
-                {item}
-              </button>
-              {problems[i] && (
-                <span className="warn" title={problems[i] ?? undefined}>
-                  ⚠
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
+        <SelectableList items={items} selected={selected} problems={problems} onClick={onClick} onContext={onContext} onDelete={onDelete} />
       )}
     </section>
   )

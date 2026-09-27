@@ -8,9 +8,11 @@ const render = (props: Partial<Parameters<typeof ImportedList>[0]> = {}) =>
     <ImportedList
       items={[]}
       problems={[]}
-      activeIndex={null}
+      selected={[]}
       error={null}
-      onPick={noop}
+      onClick={noop}
+      onContext={noop}
+      onDelete={noop}
       onImport={noop}
       onClear={noop}
       {...props}
@@ -27,7 +29,7 @@ describe('ImportedList', () => {
   })
 
   it('lists lines in order and marks the active one', () => {
-    const out = render({ items: ['jn 3:16', 'ps 23'], problems: [null, null], activeIndex: 1 })
+    const out = render({ items: ['jn 3:16', 'ps 23'], problems: [null, null], selected: [1] })
     expect(out.indexOf('jn 3:16')).toBeLessThan(out.indexOf('ps 23'))
     expect(out).toMatch(/class="link-btn is-active"[^>]*>ps 23/)
     expect(out).not.toMatch(/class="link-btn is-active"[^>]*>jn 3:16/)
