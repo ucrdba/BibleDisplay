@@ -47,6 +47,9 @@ export function HelpPanel({ version, onClose }: Props) {
             <code>jude 5</code>
           </li>
           <li>
+            <code>luke 1:18..</code> (verse 18 to the end of the chapter)
+          </li>
+          <li>
             Lists with commas or semicolons: <code>jn 1:3-5, mk 3:1-3; luke 1:2</code>
           </li>
         </ul>

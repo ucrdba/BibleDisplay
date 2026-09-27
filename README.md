@@ -5,6 +5,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 ## Using it
 
 - Type references and press **Enter**: `jn 1:3-5, mk 3:1-3, luke 1:2`, `ps 23`, `jn 1:50-2:3`, `jn 3:16, 18`, `jude 5`.
+- Add `..` after a verse to show the rest of the chapter: `luke 1.18.., john 3.16` shows Luke 1:18-80 and John 3:16.
 - A period works like a colon, so you don't need Shift: `gen 1.1`, `jn 1.3-5`, `jn 1.50-2.3`.
 - Books: full names, 3-letter codes (`gen`, `mar`, `joh`), common short forms (`jn`, `mk`, `ps`), or any unique start of a name. Numbered books: `1 john`, `1jn`, `1 joh`.
 - Type-ahead: start typing a book; ↑/↓ to choose, Tab or Enter to accept, Esc to close.

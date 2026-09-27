@@ -129,6 +129,24 @@ describe('parseReferences', () => {
     expect(labels('Jn. 3:16')).toEqual(['John 3:16'])
   })
 
+  it('reads ".." after a verse as the rest of the chapter', () => {
+    expect(parse('luke 1.18..,john 3.16').groups).toEqual([
+      { label: 'Luke 1:18-80', bookId: 42, startChapter: 1, startVerse: 18, endChapter: 1, endVerse: 80, inputStart: 0, inputEnd: 11 },
+      { label: 'John 3:16', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16, inputStart: 12, inputEnd: 21 },
+    ])
+    expect(labels('luke 1:18..')).toEqual(['Luke 1:18-80'])
+    expect(labels('luke 1:18 ..')).toEqual(['Luke 1:18-80'])
+    expect(labels('luke 1:80..')).toEqual(['Luke 1:80'])
+    expect(labels('jn 3:16, 30..')).toEqual(['John 3:16', 'John 3:30-36'])
+    expect(labels('jude 20..')).toEqual(['Jude 1:20-25'])
+  })
+
+  it('reports problems with ".."', () => {
+    expect(messages('luke 1:81..')).toEqual(['Luke 1 has only 80 verses'])
+    expect(messages('luke 1..')).toEqual(['Incomplete reference "luke 1.."'])
+    expect(messages('luke 1:18...')).toEqual(['Incomplete reference "luke 1:18..."'])
+  })
+
   it('reports errors the same way with a period', () => {
     expect(messages('mk 3.99')).toEqual(['Mark 3 has only 35 verses'])
     expect(messages('luke 3.')).toEqual(['Incomplete reference "luke 3."'])

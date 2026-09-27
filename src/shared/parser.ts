@@ -1,8 +1,9 @@
 import { resolveBook, type BookMatch } from './resolve'
 import type { BibleIndex, Book, ParseResult, RefError, RefGroup } from './types'
 
-// book text (lazy), then chapter[:verse][-chapter-or-verse[:verse]]
-const ITEM_RE = /^(.*?)\s*(\d+)(?:\s*[:.]\s*(\d+))?(?:\s*[-–—]\s*(\d+)(?:\s*[:.]\s*(\d+))?)?\s*$/
+// book text (lazy), then chapter[:verse][-chapter-or-verse[:verse] | ..]
+// A trailing ".." means "through the end of the chapter".
+const ITEM_RE = /^(.*?)\s*(\d+)(?:\s*[:.]\s*(\d+))?(?:\s*[-–—]\s*(\d+)(?:\s*[:.]\s*(\d+))?|\s*(\.\.))?\s*$/
 
 interface Item {
   text: string
@@ -83,7 +84,7 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
       continue
     }
 
-    const [, bookText, a, b, c, d] = m
+    const [, bookText, a, b, c, d, toEnd] = m
     let book: Book
     if (bookText) {
       // Check if bookText looks incomplete (ends with punctuation)
@@ -118,11 +119,15 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
       sc = bookText ? 1 : lastChapter
       sv = n1
       ec = sc
-      ev = n3 ?? n1
+      ev = toEnd ? Math.max(sv, index.verseCount(book.id, sc)) : (n3 ?? n1)
       if (n3 !== undefined && n4 !== undefined) {
         ec = n3
         ev = n4
       }
+    } else if (toEnd && n2 === undefined) {
+      // ".." needs a starting verse: "luke 1.." is incomplete
+      fail(`Incomplete reference "${item.text}"`)
+      continue
     } else if (n2 === undefined) {
       // "23", "23-25", or "1-2:3"
       sc = n1
@@ -139,7 +144,11 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
       // "3:16", "1:3-5", "1:50-2:3"
       sc = n1
       sv = n2
-      if (n3 === undefined) {
+      if (toEnd) {
+        // "1:18.." runs to the end of the chapter
+        ec = sc
+        ev = Math.max(sv, index.verseCount(book.id, sc))
+      } else if (n3 === undefined) {
         ec = sc
         ev = sv
       } else if (n4 === undefined) {
