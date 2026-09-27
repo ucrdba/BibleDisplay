@@ -106,6 +106,13 @@ export function HelpPanel({ version, onClose }: Props) {
           clears the selected part. Highlights are saved.
         </p>
 
+        <h3>Saving</h3>
+        <p>
+          Right-click the live preview to <strong>Save verse list…</strong> (a <code>.txt</code> you can bring
+          back with Import list…) or <strong>Save verse text…</strong> (headings and full verse text to paste
+          elsewhere).
+        </p>
+
         <h3>Blank vs Clear</h3>
         <p>Blank hides the verses but keeps them (press B again to bring them back); Clear removes them.</p>
 

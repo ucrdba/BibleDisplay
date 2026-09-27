@@ -5,7 +5,7 @@ import { HelpPanel } from '../../src/renderer/src/control/HelpPanel'
 describe('HelpPanel', () => {
   it('covers typing, shortcuts, lists, importing, and highlighting', () => {
     const out = renderToStaticMarkup(<HelpPanel version="0.1.0" onClose={() => {}} />)
-    for (const text of ['Typing verses', 'gen 1.1', 'Keyboard shortcuts', 'Esc', 'F1', 'Ctrl+click', 'Shift+click', 'Import list', 'Highlight', 'Blank']) {
+    for (const text of ['Typing verses', 'gen 1.1', 'Keyboard shortcuts', 'Esc', 'F1', 'Ctrl+click', 'Shift+click', 'Import list', 'Highlight', 'Blank', 'Save verse list', 'Save verse text']) {
       expect(out).toContain(text)
     }
     expect(out).toContain('aria-label="Close help"')

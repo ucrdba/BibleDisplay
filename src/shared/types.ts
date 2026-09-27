@@ -100,3 +100,5 @@ export interface DisplayInfo {
 }
 
 export type ImportResult = { kind: 'ok'; lines: string[] } | { kind: 'canceled' } | { kind: 'error'; message: string }
+
+export type SaveResult = { kind: 'saved'; fileName: string } | { kind: 'canceled' } | { kind: 'error'; message: string }

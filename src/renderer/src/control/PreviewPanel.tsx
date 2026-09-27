@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, ScrollCommand, VerseRange } from '../../../shared/types'
 import { VerseView } from '../verse/VerseView'
@@ -17,6 +17,8 @@ interface Anchor {
 
 const TOOLBAR_WIDTH = 340
 const TOOLBAR_HEIGHT = 40
+const MENU_WIDTH = 190
+const MENU_HEIGHT = 76
 
 interface Props {
   groups: DisplayGroup[]
@@ -29,6 +31,9 @@ interface Props {
   hasSelection: boolean
   onHighlight(color: string): void
   onRemoveHighlight(): void
+  canSave: boolean
+  onSaveList(): void
+  onSaveText(): void
 }
 
 export function previewScale(panel: Size, display: Size): number {
@@ -47,11 +52,25 @@ export function PreviewPanel({
   hasSelection,
   onHighlight,
   onRemoveHighlight,
+  canSave,
+  onSaveList,
+  onSaveText,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
   const viewport = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   const [panel, setPanel] = useState<Size>({ width: 0, height: 0 })
   const [anchor, setAnchor] = useState<Anchor | null>(null)
+  const [menu, setMenu] = useState<Anchor | null>(null)
+
+  useEffect(() => {
+    if (!menu) return
+    const close = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenu(null)
+    }
+    window.addEventListener('mousedown', close)
+    return () => window.removeEventListener('mousedown', close)
+  }, [menu])
 
   useEffect(() => {
     const el = outer.current
@@ -90,8 +109,20 @@ export function PreviewPanel({
     setAnchor({ x: left, y: top })
   }
 
+  const handleContextMenu = (e: ReactMouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const x = Math.min(e.clientX, Math.max(0, window.innerWidth - MENU_WIDTH))
+    const y = Math.min(e.clientY, Math.max(0, window.innerHeight - MENU_HEIGHT))
+    setMenu({ x, y })
+  }
+
   return (
-    <div className="preview" ref={outer} onWheel={e => onScroll({ kind: 'by', px: e.deltaY / Math.max(k, 0.1) })}>
+    <div
+      className="preview"
+      ref={outer}
+      onWheel={e => onScroll({ kind: 'by', px: e.deltaY / Math.max(k, 0.1) })}
+      onContextMenu={handleContextMenu}
+    >
       <div className="preview__frame" style={{ width: info.width * k, height: info.height * k }}>
         <div
           className="preview__viewport"
@@ -113,6 +144,44 @@ export function PreviewPanel({
             onSelect([])
           }}
         />
+      )}
+      {menu && (
+        <div
+          className="context-menu"
+          ref={menuRef}
+          style={{ left: menu.x, top: menu.y }}
+          role="menu"
+          onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault()
+              setMenu(null)
+            }
+          }}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            autoFocus
+            disabled={!canSave}
+            onClick={() => {
+              setMenu(null)
+              onSaveList()
+            }}
+          >
+            Save verse list…
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={!canSave}
+            onClick={() => {
+              setMenu(null)
+              onSaveText()
+            }}
+          >
+            Save verse text…
+          </button>
+        </div>
       )}
     </div>
   )

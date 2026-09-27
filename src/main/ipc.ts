@@ -1,9 +1,18 @@
 import { dialog, ipcMain, type BrowserWindow } from 'electron'
-import { readFile } from 'node:fs/promises'
+import { basename } from 'node:path'
+import { readFile, writeFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
 import { decodeTextFile, IMPORT_MAX_BYTES, parseImportText } from '../shared/importList'
 import type { Styles } from '../shared/styles'
-import type { DisplayInfo, DisplayState, ImportResult, RefGroup, ScrollCommand, VerseRange } from '../shared/types'
+import type {
+  DisplayInfo,
+  DisplayState,
+  ImportResult,
+  RefGroup,
+  SaveResult,
+  ScrollCommand,
+  VerseRange,
+} from '../shared/types'
 import type { BibleDb } from './bibleDb'
 import { listFonts } from './fonts'
 import { loadGroups } from './loadGroups'
@@ -56,6 +65,22 @@ export function registerIpc(ctx: MainContext): void {
       return { kind: 'ok', lines }
     } catch (e) {
       return { kind: 'error', message: `Could not read the file: ${(e as Error).message}` }
+    }
+  })
+  ipcMain.handle(IPC.saveTextFile, async (_e, suggestedName: string, content: string): Promise<SaveResult> => {
+    const options: Electron.SaveDialogOptions = {
+      title: 'Save',
+      defaultPath: suggestedName,
+      filters: [{ name: 'Text files', extensions: ['txt'] }],
+    }
+    const parent = ctx.getControl()
+    const pick = parent ? await dialog.showSaveDialog(parent, options) : await dialog.showSaveDialog(options)
+    if (pick.canceled || !pick.filePath) return { kind: 'canceled' }
+    try {
+      await writeFile(pick.filePath, content, 'utf8')
+      return { kind: 'saved', fileName: basename(pick.filePath) }
+    } catch (e) {
+      return { kind: 'error', message: (e as Error).message }
     }
   })
   ipcMain.handle(IPC.listImported, () => ctx.user.listImported())

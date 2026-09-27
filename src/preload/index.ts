@@ -20,6 +20,7 @@ const api: BibleApi = {
     listRecent: () => ipcRenderer.invoke(IPC.listRecent),
     removeRecent: inputs => ipcRenderer.invoke(IPC.removeRecent, inputs),
     importList: () => ipcRenderer.invoke(IPC.importList),
+    saveTextFile: (suggestedName, content) => ipcRenderer.invoke(IPC.saveTextFile, suggestedName, content),
     listImported: () => ipcRenderer.invoke(IPC.listImported),
     clearImported: () => ipcRenderer.invoke(IPC.clearImported),
     removeImported: indices => ipcRenderer.invoke(IPC.removeImported, indices),

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toVerseList, toVerseText } from '../../../shared/exportVerses'
 import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type ListSelection } from '../../../shared/listSelection'
 import { parseReferences } from '../../../shared/parser'
 import { stepScale, type Styles } from '../../../shared/styles'
@@ -45,6 +46,8 @@ export function ControlScreen() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
+  const [saveNotice, setSaveNotice] = useState<string | null>(null)
+  const saveNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const importedSelected = listSel.list === 'imported' ? listSel.sel.selected : []
   const recentSelected = listSel.list === 'recent' ? listSel.sel.selected : []
@@ -126,6 +129,17 @@ export function ControlScreen() {
     setImportError(null)
     setImported(result.lines)
   }
+
+  const save = async (suggestedName: string, content: string) => {
+    const result = await api().saveTextFile(suggestedName, content)
+    if (result.kind === 'canceled') return
+    if (saveNoticeTimer.current) clearTimeout(saveNoticeTimer.current)
+    setSaveNotice(result.kind === 'saved' ? `Saved: ${result.fileName}` : `Could not save: ${result.message}`)
+    saveNoticeTimer.current = setTimeout(() => setSaveNotice(null), 4000)
+  }
+
+  const saveList = () => void save('Verse list.txt', toVerseList(groups))
+  const saveText = () => void save('Verse text.txt', toVerseText(groups))
 
   const clearImported = async () => {
     await api().clearImported()
@@ -255,7 +269,9 @@ export function ControlScreen() {
         </aside>
 
         <main className="panel panel--middle">
-          <h3 className="panel__title">Live preview</h3>
+          <h3 className="panel__title">
+            Live preview {saveNotice && <span className="save-notice">{saveNotice}</span>}
+          </h3>
           {styles && (
             <PreviewPanel
               groups={groups}
@@ -268,6 +284,9 @@ export function ControlScreen() {
               hasSelection={selection.length > 0}
               onHighlight={c => void highlight(c)}
               onRemoveHighlight={() => void removeHighlight()}
+              canSave={groups.length > 0}
+              onSaveList={saveList}
+              onSaveText={saveText}
             />
           )}
         </main>
