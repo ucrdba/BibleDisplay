@@ -3,7 +3,7 @@ export const QUICK_COLORS = [
   '#c58bff', '#ff9f40', '#9a9a9a', '#111111', '#000000', '#1b2a4a',
 ]
 
-export const HIGHLIGHT_COLORS = ['#ffffff', '#ffd84a', '#6ad36a', '#4aa3ff', '#ff9f40', '#c58bff', '#ff6fb5']
+export const HIGHLIGHT_COLORS = ['#ffffff', '#000000', '#ffd84a', '#6ad36a', '#4aa3ff', '#ff9f40', '#c58bff', '#ff6fb5']
 
 interface Props {
   label: string

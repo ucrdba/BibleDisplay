@@ -13,10 +13,11 @@ describe('HighlightToolbar', () => {
     }
   })
 
-  it('offers white as the first highlight color', () => {
-    expect(HIGHLIGHT_COLORS[0]).toBe('#ffffff')
+  it('offers white and black first, for dark and light backgrounds', () => {
+    expect(HIGHLIGHT_COLORS.slice(0, 2)).toEqual(['#ffffff', '#000000'])
     const out = renderToStaticMarkup(<HighlightToolbar x={10} y={20} onHighlight={noop} onRemove={noop} onClose={noop} />)
     expect(out).toContain('aria-label="Highlight #ffffff"')
+    expect(out).toContain('aria-label="Highlight #000000"')
   })
 
   it('renders a Remove highlight button and a Close button', () => {

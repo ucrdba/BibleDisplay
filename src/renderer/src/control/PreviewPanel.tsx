@@ -15,7 +15,7 @@ interface Anchor {
   y: number
 }
 
-const TOOLBAR_WIDTH = 280
+const TOOLBAR_WIDTH = 340
 const TOOLBAR_HEIGHT = 40
 
 interface Props {
