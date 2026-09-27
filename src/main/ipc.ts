@@ -91,7 +91,8 @@ export function registerIpc(ctx: MainContext): void {
       return await new Promise<PrintResult>(resolve => {
         win.webContents.print({ silent: false, printBackground: false }, (success, failureReason) => {
           if (success) resolve({ kind: 'printed' })
-          else if (failureReason === 'cancelled') resolve({ kind: 'canceled' })
+          // Electron reports a dismissed dialog as "cancelled" or "Print job canceled" depending on version.
+          else if (/cancel/i.test(failureReason)) resolve({ kind: 'canceled' })
           else resolve({ kind: 'error', message: failureReason })
         })
       })
