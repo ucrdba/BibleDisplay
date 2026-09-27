@@ -22,7 +22,7 @@ npm install          # also rebuilds better-sqlite3 for Electron
 npm run dev          # run the app
 npm test             # run tests (inside Electron's Node)
 npm run typecheck
-npm run dist         # build the Windows installer into release/
+npm run dist         # bump the patch version, then build the Windows installer into release/
 ```
 
 ### Rebuilding the Bible database

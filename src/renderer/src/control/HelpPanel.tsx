@@ -1,8 +1,9 @@
 interface Props {
+  version: string
   onClose(): void
 }
 
-export function HelpPanel({ onClose }: Props) {
+export function HelpPanel({ version, onClose }: Props) {
   return (
     <div
       className="help-overlay"
@@ -15,6 +16,7 @@ export function HelpPanel({ onClose }: Props) {
     >
       <div className="help-panel">
         <h2>Help</h2>
+        <p className="muted">Bible Display — version {version}</p>
         <button type="button" className="icon-btn help-close" aria-label="Close help" autoFocus onClick={onClose}>
           ✕
         </button>

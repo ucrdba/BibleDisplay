@@ -15,7 +15,7 @@
     "import-kjv": "esbuild data/import-kjv.ts --bundle --platform=node --format=cjs --external:better-sqlite3 --outfile=out/import-kjv.cjs && cross-env ELECTRON_RUN_AS_NODE=1 electron out/import-kjv.cjs",
     "icons": "node scripts/make-icons.mjs",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
-    "dist": "npm run build && electron-builder --win"
+    "dist": "npm version patch --no-git-tag-version && npm run build && electron-builder --win"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

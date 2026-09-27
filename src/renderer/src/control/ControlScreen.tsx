@@ -288,7 +288,7 @@ export function ControlScreen() {
           )}
         </aside>
       </div>
-      {helpOpen && <HelpPanel onClose={() => setHelpOpen(false)} />}
+      {helpOpen && <HelpPanel version={__APP_VERSION__} onClose={() => setHelpOpen(false)} />}
     </div>
   )
 }
