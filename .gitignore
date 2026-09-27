@@ -3,5 +3,6 @@ out/
 dist/
 release/
 .superpowers/
+data/source/
 *.db-journal
 .claude/worktrees/
