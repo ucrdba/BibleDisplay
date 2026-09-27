@@ -57,6 +57,12 @@ export function HelpPanel({ version, onClose }: Props) {
           A period works like a colon: <code>gen 1.1</code>.
         </p>
         <p>
+          Rest of a chapter: add <code>..</code> after a verse to show it through the last verse of that chapter.{' '}
+          <code>luke 1:18..</code> or <code>luke 1.18..</code> shows Luke 1:18-80; <code>jn 3:16, 30..</code> shows
+          John 3:16 and John 3:30-36; <code>jude 20..</code> works for one-chapter books. The <code>..</code> needs a
+          starting verse — <code>luke 1..</code> is incomplete (use <code>luke 1</code> for the whole chapter).
+        </p>
+        <p>
           Books: full names, 3-letter codes (<code>gen</code>, <code>mar</code>, <code>joh</code>), short forms
           (<code>jn</code>, <code>mk</code>, <code>ps</code>), numbered books (<code>1 john</code>, <code>1jn</code>
           ), or any unique start of a name.

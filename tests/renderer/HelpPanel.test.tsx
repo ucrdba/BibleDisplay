@@ -16,6 +16,13 @@ describe('HelpPanel', () => {
     expect(out).toContain('Bible Display — version 1.2.3')
   })
 
+  it('explains ".." for the rest of a chapter', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    for (const text of ['Rest of a chapter', 'luke 1.18..', 'Luke 1:18-80', 'jn 3:16, 30..', 'luke 1..']) {
+      expect(out).toContain(text)
+    }
+  })
+
   it('shows the copyright and license terms', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('© 2026 Landmark Missionary Church of Banning CA')
