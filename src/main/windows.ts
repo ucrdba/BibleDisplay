@@ -1,8 +1,19 @@
-import { BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
 import { pickDisplay } from './displayPick'
 
 const PRELOAD = join(__dirname, '../preload/index.js')
+
+/**
+ * Path to the app icon, used for the BrowserWindow icon on Linux/Windows. Packaged builds
+ * ship it as an extraResource alongside bible.db; in dev it is read straight from the
+ * repo's resources folder.
+ */
+function iconPath(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'icon.png')
+    : join(app.getAppPath(), 'resources', 'icon.png')
+}
 
 function load(win: BrowserWindow, route: 'control' | 'display'): void {
   const devUrl = process.env['ELECTRON_RENDERER_URL']
@@ -28,6 +39,7 @@ export function createControlWindow(): BrowserWindow {
     height: 860,
     title: 'Bible Display — Control',
     autoHideMenuBar: true,
+    icon: iconPath(),
     webPreferences: { preload: PRELOAD },
   })
   lockNavigation(win)
@@ -44,6 +56,7 @@ export function createDisplayWindow(): BrowserWindow {
     backgroundColor: '#111111',
     show: false,
     frame: false,
+    icon: iconPath(),
     webPreferences: { preload: PRELOAD },
   })
   lockNavigation(win)
