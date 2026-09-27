@@ -1,7 +1,7 @@
 {
   "name": "bible-display",
   "productName": "BibleDisplay",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Show Bible verses on a second monitor",
   "main": "out/main/index.js",
