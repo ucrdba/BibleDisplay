@@ -64,14 +64,30 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
     const fail = (message: string) => errors.push({ message, inputStart: item.start, inputEnd: item.end })
     const m = ITEM_RE.exec(item.text)
     if (!m) {
-      const r = resolveBook(item.text)
-      fail(r.kind === 'book' ? `Missing chapter after "${r.book.name}"` : bookError(item.text, r))
+      const bookPart = item.text.replace(/[\s\d:\-–—]+$/, '')
+      if (!bookPart) {
+        fail(`Incomplete reference "${item.text}"`)
+        continue
+      }
+      const r = resolveBook(bookPart)
+      if (r.kind !== 'book') {
+        fail(bookError(bookPart, r))
+      } else if (bookPart === item.text) {
+        fail(`Missing chapter after "${r.book.name}"`)
+      } else {
+        fail(`Incomplete reference "${item.text}"`)
+      }
       continue
     }
 
     const [, bookText, a, b, c, d] = m
     let book: Book
     if (bookText) {
+      // Check if bookText looks incomplete (ends with punctuation)
+      if (/[\s:\-–—]$/.test(bookText)) {
+        fail(`Incomplete reference "${item.text}"`)
+        continue
+      }
       const r = resolveBook(bookText)
       if (r.kind !== 'book') {
         fail(bookError(bookText, r))

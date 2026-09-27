@@ -102,4 +102,15 @@ describe('parseReferences', () => {
   it('does not carry over from a failed item', () => {
     expect(labels('jn 3:16, xyz 1:1, 18')).toEqual(['John 3:16', 'John 3:18'])
   })
+
+  it('explains incomplete references', () => {
+    expect(messages('luke 3:')).toEqual(['Incomplete reference "luke 3:"'])
+    expect(messages('ps 23:1-')).toEqual(['Incomplete reference "ps 23:1-"'])
+    expect(messages('jn:16')).toEqual(['Incomplete reference "jn:16"'])
+    expect(messages('1 john 3:')).toEqual(['Incomplete reference "1 john 3:"'])
+    expect(messages('xyz 3:')).toEqual(['Unknown book "xyz"'])
+    expect(messages('jo 3:')).toEqual(['"jo" matches Joshua, Job, Joel, Jonah, John'])
+    expect(messages('3:')).toEqual(['Incomplete reference "3:"'])
+    expect(parse('jn 3:16, luke 3:').errors).toEqual([{ message: 'Incomplete reference "luke 3:"', inputStart: 9, inputEnd: 16 }])
+  })
 })
