@@ -54,8 +54,8 @@ Established by a spike (2026-10-05):
 "import-strongs": "esbuild data/import-strongs.ts --bundle --platform=node --format=cjs --external:better-sqlite3 --outfile=out/import-strongs.cjs && cross-env ELECTRON_RUN_AS_NODE=1 electron out/import-strongs.cjs"
 ```
 
-Inputs: `data/source/eng-kjv2006_usfm.zip` (or an unzipped `data/source/eng-kjv2006_usfm/`
-folder), `data/source/StrongHebrewG.xml`, `data/source/strongsgreek.xml`. Output: modifies
+Inputs: the unzipped `data/source/eng-kjv2006_usfm/` folder (zip files are not read),
+`data/source/StrongHebrewG.xml`, `data/source/strongsgreek.xml`. Output: modifies
 `resources/bible.db` in place.
 
 ### 4.2 Steps
@@ -114,10 +114,12 @@ CREATE TABLE strongs_entries (
   `<note type="exegesis">` → `derivation`; `<note type="explanation">` → `definition`;
   `<note type="translation">` → `kjv_def`. Inside notes, `<w src="433" lemma="…" …/>` becomes
   `H433 (lemma)` and `<hi>` keeps its text. Ignored: the `<foreign>` Greek glosses, the numbered
-  `<list>` outline (a later lexicon's, not Strong's), and `<note type="x-typo">`.
+  `<list>` outline (a later lexicon's, not Strong's), and `<note type="x-typo">` notes, which are
+  removed (including ones nested inside other notes) before the notes are read.
 - **Greek** (`strongsgreek.xml`): one `<entry strongs="00026">`; `<greek unicode translit>` →
   `lemma`, `xlit`; `<pronunciation strongs>` → `pron`; `<strongs_derivation>` → `derivation`;
-  `<strongs_def>` → `definition`; `<kjv_def>` → `kjv_def` (leading `:--` removed).
+  `<strongs_def>` → `definition`; `<kjv_def>` → `kjv_def` (leading `:--` or `--` removed). Text after `</kjv_def>` (Strong's own
+  remarks and cross-references) is appended to `definition`.
   `<strongsref language="HEBREW|GREEK" strongs="…"/>` becomes `H…` / `G…` text (no leading
   zeros); `<greek …/>` inside text becomes its `unicode` value.
 - Whitespace is collapsed; ids have no leading zeros.
@@ -212,7 +214,7 @@ then committed).
 | Same word clicked again | Panel unchanged; no duplicate history |
 | Link to a missing id | "No entry for H9999." |
 | Verses change (new reference, Clear) | Tint cleared; panel keeps the last entry |
-| Display blanked | Lookups still work in the preview; nothing on the projector |
+| Display blanked | The preview is blank too (existing behavior), so there is nothing to click; the tint returns after un-blanking |
 | `bible.db` without Strong's tables | Words not clickable; "not installed" message |
 | Import would change verse text | Import rolls back and exits non-zero |
 

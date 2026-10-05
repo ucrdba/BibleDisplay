@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { lookupTarget, splitStrongsRefs, strongsAt, wordAt } from '../../src/shared/strongs'
+import { lookupTarget, pointInRects, splitStrongsRefs, strongsAt, wordAt } from '../../src/shared/strongs'
 
 const TEXT = 'For God so loved the world.'
 const SPANS = [
@@ -25,6 +25,11 @@ describe('wordAt', () => {
     expect(wordAt(TEXT, 26)).toEqual({ start: 21, end: 26, word: 'world' })
     expect(wordAt('a  b', 2)).toBeNull()
   })
+
+  it('keeps hyphenated words whole', () => {
+    expect(wordAt('to Beth-el now', 5)).toEqual({ start: 3, end: 10, word: 'Beth-el' })
+    expect(wordAt('a - b', 2)).toBeNull()
+  })
 })
 
 describe('lookupTarget', () => {
@@ -35,7 +40,7 @@ describe('lookupTarget', () => {
   })
 
   it('reports an untagged word', () => {
-    expect(at(18)).toEqual({ kind: 'untagged', word: 'the' })
+    expect(at(18)).toEqual({ kind: 'untagged', word: 'the', start: 17, end: 20 })
   })
 
   it('ignores clicks off any word or in another verse', () => {
@@ -47,6 +52,8 @@ describe('lookupTarget', () => {
     expect(lookupTarget([{ ...VERSE, strongs: undefined }], { bookId: 43, chapter: 3, verse: 16, offset: 5 })).toEqual({
       kind: 'untagged',
       word: 'God',
+      start: 4,
+      end: 7,
     })
   })
 })
@@ -63,5 +70,19 @@ describe('splitStrongsRefs', () => {
       { text: '.' },
     ])
     expect(splitStrongsRefs('no refs')).toEqual([{ text: 'no refs' }])
+  })
+})
+
+describe('pointInRects', () => {
+  const rects = [{ left: 10, right: 20, top: 5, bottom: 15 }]
+  it('accepts points inside or on an edge', () => {
+    expect(pointInRects(rects, 15, 10)).toBe(true)
+    expect(pointInRects(rects, 10, 5)).toBe(true)
+    expect(pointInRects(rects, 20, 15)).toBe(true)
+  })
+  it('rejects points outside and empty lists', () => {
+    expect(pointInRects(rects, 21, 10)).toBe(false)
+    expect(pointInRects(rects, 15, 16)).toBe(false)
+    expect(pointInRects([], 15, 10)).toBe(false)
   })
 })

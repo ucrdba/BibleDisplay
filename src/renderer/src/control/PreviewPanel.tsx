@@ -4,8 +4,7 @@ import type { DisplayGroup, DisplayInfo, ScrollCommand, VerseRange } from '../..
 import { VerseView } from '../verse/VerseView'
 import { HighlightToolbar } from './HighlightToolbar'
 import { PreviewMenu } from './PreviewMenu'
-import type { VersePoint } from '../../../shared/strongs'
-import { lookupTarget } from '../../../shared/strongs'
+import { lookupTarget, pointInRects, type VersePoint } from '../../../shared/strongs'
 import { pointToVerseOffset, selectionToRanges, verseTextRange } from './selection'
 
 interface Size {
@@ -136,7 +135,7 @@ export function PreviewPanel({
     }
     const m = strongsMark
     setHighlight('strongs-current', verseTextRange(viewport.current, `${m.bookId}.${m.chapter}.${m.verse}`, m.start, m.end))
-  }, [strongsMark, groups])
+  }, [strongsMark, groups, blank])
 
   useEffect(() => () => {
     setHighlight('strongs-hover', null)
@@ -148,12 +147,24 @@ export function PreviewPanel({
     return c && viewport.current ? pointToVerseOffset(viewport.current, c.node, c.offset) : null
   }
 
+  // The word under the pointer, only if the pointer is really over it (not nearby blank space).
+  const wordUnder = (x: number, y: number) => {
+    const root = viewport.current
+    const p = pointAt(x, y)
+    const target = p ? lookupTarget(verses, p) : null
+    if (!root || !p || !target) return null
+    const start = target.kind === 'tagged' ? target.span.start : target.start
+    const end = target.kind === 'tagged' ? target.span.end : target.end
+    const range = verseTextRange(root, `${p.bookId}.${p.chapter}.${p.verse}`, start, end)
+    if (!range || !pointInRects(Array.from(range.getClientRects()), x, y)) return null
+    return { p, target, range }
+  }
+
   const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
     if (!strongsEnabled || !viewport.current) return
-    const p = pointAt(e.clientX, e.clientY)
-    const target = p ? lookupTarget(verses, p) : null
-    if (p && target?.kind === 'tagged') {
-      setHighlight('strongs-hover', verseTextRange(viewport.current, `${p.bookId}.${p.chapter}.${p.verse}`, target.span.start, target.span.end))
+    const hit = wordUnder(e.clientX, e.clientY)
+    if (hit?.target.kind === 'tagged') {
+      setHighlight('strongs-hover', hit.range)
       viewport.current.style.cursor = 'pointer'
     } else {
       setHighlight('strongs-hover', null)
@@ -170,8 +181,8 @@ export function PreviewPanel({
       setAnchor(null)
       // A click (no text dragged) looks up the word under the pointer.
       if (e.button === 0) {
-        const p = pointAt(e.clientX, e.clientY)
-        if (p) onLookup(p)
+        const hit = wordUnder(e.clientX, e.clientY)
+        if (hit) onLookup(hit.p)
       }
       return
     }

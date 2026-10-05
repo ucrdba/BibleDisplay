@@ -18,13 +18,16 @@ const WORD_CHAR = /[A-Za-z\u00c0-\u024f'\u2019]/
 export function wordAt(text: string, offset: number): { start: number; end: number; word: string } | null {
   let start = offset
   let end = offset
-  while (start > 0 && WORD_CHAR.test(text[start - 1])) start--
-  while (end < text.length && WORD_CHAR.test(text[end])) end++
+  // A hyphen belongs to the word only with a letter on both sides ("Beth-el").
+  const inner = (i: number) =>
+    WORD_CHAR.test(text[i]) || (text[i] === '-' && i > 0 && WORD_CHAR.test(text[i - 1]) && i + 1 < text.length && WORD_CHAR.test(text[i + 1]))
+  while (start > 0 && inner(start - 1)) start--
+  while (end < text.length && inner(end)) end++
   if (end === start) return null
   return { start, end, word: text.slice(start, end) }
 }
 
-export type LookupTarget = { kind: 'tagged'; span: StrongsSpan; word: string } | { kind: 'untagged'; word: string } | null
+export type LookupTarget = { kind: 'tagged'; span: StrongsSpan; word: string } | { kind: 'untagged'; word: string; start: number; end: number } | null
 
 /** What a click at a verse offset refers to: a tagged word, an untagged word, or nothing. */
 export function lookupTarget(
@@ -36,7 +39,7 @@ export function lookupTarget(
   const span = strongsAt(v.strongs ?? [], p.offset)
   if (span) return { kind: 'tagged', span, word: v.text.slice(span.start, span.end) }
   const w = wordAt(v.text, p.offset)
-  return w ? { kind: 'untagged', word: w.word } : null
+  return w ? { kind: 'untagged', word: w.word, start: w.start, end: w.end } : null
 }
 
 /** Splits text into plain parts and Strong's numbers (H123, G456) for linking. */
@@ -50,4 +53,13 @@ export function splitStrongsRefs(text: string): ({ text: string } | { id: string
   }
   if (pos < text.length || out.length === 0) out.push({ text: text.slice(pos) })
   return out
+}
+
+/** Whether a point lies within any of the rectangles (edges included). */
+export function pointInRects(
+  rects: { left: number; right: number; top: number; bottom: number }[],
+  x: number,
+  y: number,
+): boolean {
+  return rects.some(r => r.left <= x && x <= r.right && r.top <= y && y <= r.bottom)
 }

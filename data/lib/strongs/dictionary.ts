@@ -39,7 +39,8 @@ const hebText = (s: string) =>
 export function parseHebrewDictionary(xml: string): DictEntry[] {
   const out: DictEntry[] = []
   for (const m of xml.matchAll(/<div type="entry"[^>]*>([\s\S]*?)<\/div>/g)) {
-    const body = m[1]
+    // Typo notes can nest inside the other notes; drop them before reading those.
+    const body = m[1].replace(/<note type="x-typo">[\s\S]*?<\/note>/g, '')
     const w = /<w\b([^>]*\bID="H(\d+)"[^>]*)>/.exec(body)
     if (!w) continue
     const at = attrs(w[1])
@@ -83,14 +84,17 @@ export function parseGreekDictionary(xml: string): DictEntry[] {
     const g = /<greek\b([^>]*)\/>/.exec(body)
     const greek = g ? attrs(g[1]) : {}
     const p = /<pronunciation\b([^>]*)\/>/.exec(body)
+    const endDef = body.indexOf('</kjv_def>')
+    const trailing = endDef >= 0 ? grkText(body.slice(endDef + '</kjv_def>'.length)) : ''
+    const definition = [part(body, 'strongs_def'), trailing].filter(Boolean).join(' ')
     out.push({
       id: `G${Number(m[1])}`,
       lemma: greek.unicode ?? '',
       xlit: greek.translit ?? '',
       pron: p ? (attrs(p[1]).strongs ?? '') : '',
       derivation: part(body, 'strongs_derivation'),
-      definition: part(body, 'strongs_def'),
-      kjvDef: part(body, 'kjv_def').replace(/^:--\s*/, ''),
+      definition,
+      kjvDef: part(body, 'kjv_def').replace(/^:?--\s*/, ''),
     })
   }
   return out
