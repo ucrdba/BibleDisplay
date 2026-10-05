@@ -9,7 +9,7 @@ const messages = (s: string) => parse(s).errors.map(e => e.message)
 describe('parseReferences', () => {
   it('parses a single verse with positions', () => {
     expect(parse('jn 3:16').groups).toEqual([
-      { label: 'John 3:16', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16, inputStart: 0, inputEnd: 7 },
+      { label: 'John 3:16', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16, whole: false, inputStart: 0, inputEnd: 7 },
     ])
   })
 
@@ -99,6 +99,18 @@ describe('parseReferences', () => {
     expect(parse(' , ; ')).toEqual({ groups: [], errors: [] })
   })
 
+  it('marks chapter-only references as whole', () => {
+    const whole = (s: string) => parse(s).groups.map(g => g.whole)
+    expect(whole('ps 23')).toEqual([true])
+    expect(whole('ps 23-24')).toEqual([true])
+    expect(whole('ps 23, 24')).toEqual([true, true])
+    expect(whole('jn 3:16')).toEqual([false])
+    expect(whole('jn 3:16-4:2')).toEqual([false])
+    expect(whole('luke 1:18..')).toEqual([false])
+    expect(whole('jude 5')).toEqual([false])
+    expect(whole('jn 3:16, 18')).toEqual([false, false])
+  })
+
   it('does not carry over from a failed item', () => {
     expect(labels('jn 3:16, xyz 1:1, 18')).toEqual(['John 3:16', 'John 3:18'])
   })
@@ -131,8 +143,8 @@ describe('parseReferences', () => {
 
   it('reads ".." after a verse as the rest of the chapter', () => {
     expect(parse('luke 1.18..,john 3.16').groups).toEqual([
-      { label: 'Luke 1:18-80', bookId: 42, startChapter: 1, startVerse: 18, endChapter: 1, endVerse: 80, inputStart: 0, inputEnd: 11 },
-      { label: 'John 3:16', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16, inputStart: 12, inputEnd: 21 },
+      { label: 'Luke 1:18-80', bookId: 42, startChapter: 1, startVerse: 18, endChapter: 1, endVerse: 80, whole: false, inputStart: 0, inputEnd: 11 },
+      { label: 'John 3:16', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16, whole: false, inputStart: 12, inputEnd: 21 },
     ])
     expect(labels('luke 1:18..')).toEqual(['Luke 1:18-80'])
     expect(labels('luke 1:18 ..')).toEqual(['Luke 1:18-80'])

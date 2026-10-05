@@ -4,7 +4,7 @@ import { RecentList } from '../../src/renderer/src/control/RecentList'
 import { SelectedList } from '../../src/renderer/src/control/SelectedList'
 import type { RefGroup } from '../../src/shared/types'
 
-const group: RefGroup = { label: 'John 1:3-5', bookId: 43, startChapter: 1, startVerse: 3, endChapter: 1, endVerse: 5, inputStart: 0, inputEnd: 8 }
+const group: RefGroup = { label: 'John 1:3-5', bookId: 43, startChapter: 1, startVerse: 3, endChapter: 1, endVerse: 5, whole: false, inputStart: 0, inputEnd: 8 }
 
 describe('SelectedList', () => {
   it('lists groups with remove buttons', () => {

@@ -14,7 +14,7 @@ describe('loadGroups', () => {
     const user = UserDb.open(join(mkdtempSync(join(tmpdir(), 'user-')), 'user.db'))
     user.addHighlights([{ bookId: 43, chapter: 3, verse: 17, start: 0, end: 7 }], 'gold')
     const group: RefGroup = {
-      label: 'John 3:16-18', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 18, inputStart: 0, inputEnd: 10,
+      label: 'John 3:16-18', bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 18, whole: false, inputStart: 0, inputEnd: 10,
     }
 
     const [g] = loadGroups(bible, user, [group])

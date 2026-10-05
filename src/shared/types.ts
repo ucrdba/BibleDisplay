@@ -25,6 +25,8 @@ export interface VerseSpan {
 
 export interface RefGroup extends VerseSpan {
   label: string
+  /** A chapter-only reference such as "ps 23" or "ps 23-24". */
+  whole: boolean
   inputStart: number
   inputEnd: number
 }

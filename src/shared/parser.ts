@@ -173,6 +173,7 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
       startVerse: sv,
       endChapter: ec,
       endVerse: ev,
+      whole,
       inputStart: item.start,
       inputEnd: item.end,
     })
