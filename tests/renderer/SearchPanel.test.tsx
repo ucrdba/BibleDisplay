@@ -51,6 +51,10 @@ describe('SearchPanel', () => {
     expect(out).toContain('New Testament')
   })
 
+  it('uses a real ellipsis in the placeholder', () => {
+    expect(render()).toContain('placeholder="Find words\u2026"')
+  })
+
   it('lists hits with short references and bold matches', () => {
     const out = render()
     expect(out).toContain('Psa 23:2')

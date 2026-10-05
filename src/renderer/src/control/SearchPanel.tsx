@@ -59,7 +59,7 @@ export function SearchPanel({ inputRef, text, mode, scope, state, selected, onTe
         <input
           ref={inputRef}
           className="search__input"
-          placeholder="Find words\u2026"
+          placeholder={'Find words\u2026'}
           aria-label="Search text"
           value={text}
           onChange={e => onText(e.target.value)}
