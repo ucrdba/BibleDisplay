@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { existsSync, renameSync, rmSync } from 'node:fs'
 import { removeIndices } from '../shared/listSelection'
+import type { PanelName } from '../shared/panels'
 import { DEFAULT_SEARCH_PREFS, normalizeSearchPrefs, type SearchPrefs } from '../shared/search'
 import { normalizeStyles, type Styles } from '../shared/styles'
 import type { Highlight, VerseRange, VerseSpan } from '../shared/types'
@@ -46,6 +47,9 @@ function connect(path: string): Database.Database {
     throw e
   }
 }
+
+// "settings" keeps its original key so existing saved choices survive.
+const PANEL_KEYS: Record<PanelName, string> = { settings: 'rightPanelCollapsed', browse: 'browsePanelCollapsed' }
 
 export class UserDb {
   private constructor(private readonly db: Database.Database) {}
@@ -180,15 +184,15 @@ export class UserDb {
       .run('displayMonitor', JSON.stringify(id))
   }
 
-  getPanelCollapsed(): boolean {
-    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('rightPanelCollapsed') as { value: string } | undefined
+  getPanelCollapsed(panel: PanelName): boolean {
+    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get(PANEL_KEYS[panel]) as { value: string } | undefined
     return row?.value === 'true'
   }
 
-  setPanelCollapsed(collapsed: boolean): void {
+  setPanelCollapsed(panel: PanelName, collapsed: boolean): void {
     this.db
       .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
-      .run('rightPanelCollapsed', JSON.stringify(collapsed))
+      .run(PANEL_KEYS[panel], JSON.stringify(collapsed))
   }
 
   getSearchPrefs(): SearchPrefs {

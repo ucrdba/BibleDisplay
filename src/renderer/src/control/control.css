@@ -38,7 +38,7 @@
   overflow-y: auto;
 }
 
-.control__panels--collapsed {
+.control__panels--settings-collapsed {
   grid-template-columns: 300px 1fr 28px;
 }
 

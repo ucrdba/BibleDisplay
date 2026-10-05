@@ -111,18 +111,32 @@ describe('UserDb display monitor', () => {
   })
 })
 
-describe('UserDb right panel', () => {
-  it('starts expanded and remembers collapsing across reopening', () => {
+describe('UserDb panel collapse', () => {
+  it('starts expanded and remembers each panel separately across reopening', () => {
     const path = newPath()
     const db = open(path)
-    expect(db.getPanelCollapsed()).toBe(false)
-    db.setPanelCollapsed(true)
+    expect(db.getPanelCollapsed('settings')).toBe(false)
+    expect(db.getPanelCollapsed('browse')).toBe(false)
+    db.setPanelCollapsed('browse', true)
     db.close()
     opened.pop()
     const again = open(path)
-    expect(again.getPanelCollapsed()).toBe(true)
-    again.setPanelCollapsed(false)
-    expect(again.getPanelCollapsed()).toBe(false)
+    expect(again.getPanelCollapsed('browse')).toBe(true)
+    expect(again.getPanelCollapsed('settings')).toBe(false)
+    again.setPanelCollapsed('settings', true)
+    again.setPanelCollapsed('browse', false)
+    expect(again.getPanelCollapsed('settings')).toBe(true)
+    expect(again.getPanelCollapsed('browse')).toBe(false)
+  })
+
+  it('keeps using the existing key for the settings panel', () => {
+    const path = newPath()
+    open(path).close()
+    opened.pop()
+    const raw = new Database(path)
+    raw.prepare("INSERT INTO settings (key, value) VALUES ('rightPanelCollapsed', 'true')").run()
+    raw.close()
+    expect(open(path).getPanelCollapsed('settings')).toBe(true)
   })
 })
 

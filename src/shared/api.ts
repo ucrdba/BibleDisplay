@@ -1,3 +1,4 @@
+import type { PanelName } from './panels'
 import type { SearchPrefs, VerseRow } from './search'
 import type { Styles } from './styles'
 import type {
@@ -37,8 +38,8 @@ export interface ControlApi {
   listFonts(): Promise<string[]>
   getDisplayInfo(): Promise<DisplayInfo>
   setDisplayMonitor(id: number | null): Promise<void>
-  getPanelCollapsed(): Promise<boolean>
-  setPanelCollapsed(collapsed: boolean): Promise<void>
+  getPanelCollapsed(panel: PanelName): Promise<boolean>
+  setPanelCollapsed(panel: PanelName, collapsed: boolean): Promise<void>
   present(state: DisplayState): void
   scroll(cmd: ScrollCommand): void
   onDisplayInfo(cb: (info: DisplayInfo) => void): Unsubscribe

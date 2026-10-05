@@ -75,7 +75,7 @@ export function ControlScreen() {
     void a.listImported().then(setImported)
     void a.listFonts().then(setFonts)
     void a.getDisplayInfo().then(setInfo)
-    void a.getPanelCollapsed().then(setPanelCollapsed)
+    void a.getPanelCollapsed('settings').then(setPanelCollapsed)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
@@ -226,7 +226,7 @@ export function ControlScreen() {
   const togglePanel = () => {
     const next = !panelCollapsed
     setPanelCollapsed(next)
-    void api().setPanelCollapsed(next)
+    void api().setPanelCollapsed('settings', next)
   }
 
   const clearImported = async () => {
@@ -315,7 +315,7 @@ export function ControlScreen() {
           ? Help
         </button>
       </div>
-      <div className={`control__panels${panelCollapsed ? ' control__panels--collapsed' : ''}`}>
+      <div className={`control__panels${panelCollapsed ? ' control__panels--settings-collapsed' : ''}`}>
         <aside className="panel panel--left">
           <h3 className="panel__title">Enter verses</h3>
           <ReferenceInput
@@ -401,7 +401,7 @@ export function ControlScreen() {
           )}
         </main>
 
-        <SidePanel collapsed={panelCollapsed} onToggle={togglePanel}>
+        <SidePanel side="right" label="settings" className="panel--right" collapsed={panelCollapsed} onToggle={togglePanel}>
           <MonitorSelect monitors={info.monitors} chosenId={info.chosenMonitorId} onChange={id => void api().setDisplayMonitor(id)} />
           {styles && (
             <StylePanel

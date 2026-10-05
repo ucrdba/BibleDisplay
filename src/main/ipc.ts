@@ -2,6 +2,7 @@ import { BrowserWindow as ElectronBrowserWindow, dialog, ipcMain, type BrowserWi
 import { basename } from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
+import { isPanelName } from '../shared/panels'
 import { decodeTextFile, IMPORT_MAX_BYTES, parseImportText } from '../shared/importList'
 import type { SearchPrefs } from '../shared/search'
 import type { Styles } from '../shared/styles'
@@ -112,8 +113,10 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.listFonts, () => listFonts())
   ipcMain.handle(IPC.getDisplayInfo, () => ctx.displayInfo())
   ipcMain.handle(IPC.setDisplayMonitor, (_e, id: number | null) => ctx.setMonitor(id))
-  ipcMain.handle(IPC.getPanelCollapsed, () => ctx.user.getPanelCollapsed())
-  ipcMain.handle(IPC.setPanelCollapsed, (_e, collapsed: boolean) => ctx.user.setPanelCollapsed(collapsed === true))
+  ipcMain.handle(IPC.getPanelCollapsed, (_e, panel: unknown) => (isPanelName(panel) ? ctx.user.getPanelCollapsed(panel) : false))
+  ipcMain.handle(IPC.setPanelCollapsed, (_e, panel: unknown, collapsed: unknown) => {
+    if (isPanelName(panel)) ctx.user.setPanelCollapsed(panel, collapsed === true)
+  })
   ipcMain.handle(IPC.displayReady, () => ({ state, styles: ctx.user.getStyles() }))
 
   ipcMain.on(IPC.present, (_e, next: DisplayState) => {
