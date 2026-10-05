@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Styles } from '../../../shared/styles'
-import type { DisplayGroup, DisplayInfo, ScrollCommand, VerseRange } from '../../../shared/types'
-import { VerseView } from '../verse/VerseView'
+import type { DisplayGroup, DisplayInfo, DisplayStrongs, ScrollCommand, VerseRange } from '../../../shared/types'
+import { DisplayLayout } from '../verse/DisplayLayout'
+import { setHighlight } from '../verse/highlights'
 import { HighlightToolbar } from './HighlightToolbar'
 import { PreviewMenu } from './PreviewMenu'
 import { lookupTarget, pointInRects, type VersePoint } from '../../../shared/strongs'
@@ -44,22 +45,13 @@ interface Props {
   /** The looked-up word to tint, if any. */
   strongsMark: VerseRange | null
   onLookup(p: VersePoint): void
+  /** The Strong's entry the display shows in its band (mirrored here). */
+  strongs?: DisplayStrongs | null
 }
 
 export function previewScale(panel: Size, display: Size): number {
   if (!panel.width || !panel.height || !display.width || !display.height) return 0
   return Math.min(panel.width / display.width, panel.height / display.height)
-}
-
-type HighlightRegistryLike = { set(name: string, h: unknown): void; delete(name: string): void }
-const highlights = (): HighlightRegistryLike | null =>
-  typeof CSS !== 'undefined' && 'highlights' in CSS ? (CSS as unknown as { highlights: HighlightRegistryLike }).highlights : null
-
-function setHighlight(name: string, range: Range | null) {
-  const reg = highlights()
-  if (!reg || typeof Highlight === 'undefined') return
-  if (range) reg.set(name, new Highlight(range))
-  else reg.delete(name)
 }
 
 /** The text node and offset under a screen point. */
@@ -94,9 +86,11 @@ export function PreviewPanel({
   strongsEnabled,
   strongsMark,
   onLookup,
+  strongs = null,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
   const viewport = useRef<HTMLDivElement>(null)
+  const versesEl = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const [panel, setPanel] = useState<Size>({ width: 0, height: 0 })
   const [anchor, setAnchor] = useState<Anchor | null>(null)
@@ -122,8 +116,8 @@ export function PreviewPanel({
   }, [])
 
   useEffect(() => {
-    if (viewport.current) viewport.current.scrollTop = scrollTop
-  }, [scrollTop, groups])
+    if (versesEl.current) versesEl.current.scrollTop = scrollTop
+  }, [scrollTop, groups, strongs])
 
   const verses = groups.flatMap(g => g.verses)
 
@@ -223,7 +217,7 @@ export function PreviewPanel({
           onMouseLeave={() => setHighlight('strongs-hover', null)}
           style={{ width: info.width, height: info.height, transform: `scale(${k})` }}
         >
-          <VerseView groups={groups} styles={styles} blank={blank} />
+          <DisplayLayout groups={groups} styles={styles} blank={blank} strongs={strongs} versesRef={versesEl} />
         </div>
       </div>
       {hasSelection && anchor && (

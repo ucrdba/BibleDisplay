@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEFAULT_STYLES, type Styles } from '../../../shared/styles'
 import type { DisplayState } from '../../../shared/types'
-import { VerseView } from '../verse/VerseView'
+import { verseTextRange } from '../control/selection'
+import { DisplayLayout } from '../verse/DisplayLayout'
+import { setHighlight } from '../verse/highlights'
 import './display.css'
 import { lineHeightPx, scrollTarget } from './scroll'
 
@@ -65,9 +67,19 @@ export function DisplayScreen() {
     scroller.current?.scrollTo({ top: 0 })
   }, [contentKey])
 
+  // Tint the looked-up word while its Strong's entry is shown.
+  useEffect(() => {
+    const el = scroller.current
+    const m = state.strongs?.mark
+    setHighlight(
+      'strongs-current',
+      el && m && !state.blank ? verseTextRange(el, `${m.bookId}.${m.chapter}.${m.verse}`, m.start, m.end) : null,
+    )
+  }, [state, styles])
+
   return (
-    <div className="display" ref={scroller} style={{ background: styles.background }}>
-      <VerseView groups={state.groups} styles={styles} blank={state.blank} />
+    <div className="display" style={{ background: styles.background }}>
+      <DisplayLayout groups={state.groups} styles={styles} blank={state.blank} strongs={state.strongs} versesRef={scroller} />
     </div>
   )
 }
