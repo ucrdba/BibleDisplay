@@ -4,8 +4,10 @@ import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type L
 import { parseReferences } from '../../../shared/parser'
 import { buildPrintHtml } from '../../../shared/printHtml'
 import { DEFAULT_SEARCH_PREFS, hitReference, parseSearchPrefix, type SearchPrefs, type SearchQuery } from '../../../shared/search'
+import { toReferenceText, type Passage } from '../../../shared/pickerSelection'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
+import { BrowsePanel } from './BrowsePanel'
 import './control.css'
 import { HelpPanel } from './HelpPanel'
 import { ImportedList } from './ImportedList'
@@ -51,6 +53,9 @@ export function ControlScreen() {
   })
   const [helpOpen, setHelpOpen] = useState(false)
   const [panelCollapsed, setPanelCollapsed] = useState(false)
+  const [browseCollapsed, setBrowseCollapsed] = useState(false)
+  // Bumped whenever verses are shown some way other than the picker, so the picker jumps to them.
+  const [browseJump, setBrowseJump] = useState(0)
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
@@ -76,6 +81,7 @@ export function ControlScreen() {
     void a.listFonts().then(setFonts)
     void a.getDisplayInfo().then(setInfo)
     void a.getPanelCollapsed('settings').then(setPanelCollapsed)
+    void a.getPanelCollapsed('browse').then(setBrowseCollapsed)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
@@ -96,12 +102,13 @@ export function ControlScreen() {
     api().present({ groups: loaded, blank: nextBlank })
   }, [])
 
-  const show = async (text: string, recordRecent = true) => {
+  const show = async (text: string, recordRecent = true, fromPicker = false) => {
     if (!index) return
     const result = parseReferences(text, index)
     setErrors(result.errors)
     if (result.groups.length === 0) return
     await present(result.groups, blank)
+    if (!fromPicker) setBrowseJump(n => n + 1)
     if (!recordRecent) return
     resetListSel()
     await api().addRecent(text)
@@ -113,9 +120,13 @@ export function ControlScreen() {
     setErrors([])
     resetListSel()
     void present([], blank)
+    setBrowseJump(n => n + 1)
   }
 
-  const removeGroup = (i: number) => void present(refGroups.filter((_, j) => j !== i), blank)
+  const removeGroup = (i: number) => {
+    void present(refGroups.filter((_, j) => j !== i), blank)
+    setBrowseJump(n => n + 1)
+  }
 
   const toggleBlank = () => {
     const next = !blank
@@ -229,6 +240,25 @@ export function ControlScreen() {
     void api().setPanelCollapsed('settings', next)
   }
 
+  const toggleBrowse = () => {
+    const next = !browseCollapsed
+    setBrowseCollapsed(next)
+    void api().setPanelCollapsed('browse', next)
+  }
+
+  // The picker produced a new selection: write it to the verse box and show it (not added to Recent).
+  const pickVerses = (next: Passage[]) => {
+    if (next.length === 0) {
+      clear()
+      return
+    }
+    const text = toReferenceText(next)
+    resetListSel()
+    setInput(text)
+    setErrors([])
+    void show(text, false, true)
+  }
+
   const clearImported = async () => {
     await api().clearImported()
     setImported([])
@@ -315,7 +345,11 @@ export function ControlScreen() {
           ? Help
         </button>
       </div>
-      <div className={`control__panels${panelCollapsed ? ' control__panels--settings-collapsed' : ''}`}>
+      <div
+        className={`control__panels${panelCollapsed ? ' control__panels--settings-collapsed' : ''}${
+          browseCollapsed ? ' control__panels--browse-collapsed' : ''
+        }`}
+      >
         <aside className="panel panel--left">
           <h3 className="panel__title">Enter verses</h3>
           <ReferenceInput
@@ -376,6 +410,11 @@ export function ControlScreen() {
             />
           )}
         </aside>
+
+        <SidePanel side="left" label="Browse" className="panel--browse" collapsed={browseCollapsed} onToggle={toggleBrowse}>
+          <h3 className="panel__title">Browse</h3>
+          <BrowsePanel index={index} passages={refGroups} jumpSignal={browseJump} onChange={pickVerses} />
+        </SidePanel>
 
         <main className="panel panel--middle">
           <h3 className="panel__title">

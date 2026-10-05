@@ -136,6 +136,15 @@ export function HelpPanel({ version, onClose }: Props) {
           <code>?still waters</code> searches for words and <code>/still\s+wat/</code> searches with a regex.
         </p>
 
+        <h3>Browse</h3>
+        <p>
+          The Browse column lists Books, Chapters, and Verses. Click a book, then a chapter, then a verse to show it.{' '}
+          <kbd>Ctrl+click</kbd> adds or removes verses (even in other chapters or books); <kbd>Shift+click</kbd> selects
+          the range from the last verse you clicked; <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+click adds that range. Double-click a
+          chapter to show the whole chapter. Verses you show any other way are highlighted here too, and a dot marks the
+          books and chapters that contain them. Click the arrow at the top to hide or show the column.
+        </p>
+
         <h3>Import list</h3>
         <p>
           Click Import list… and pick a <code>.txt</code> file with one reference per line. The list is saved

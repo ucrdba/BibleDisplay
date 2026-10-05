@@ -11,6 +11,13 @@ describe('HelpPanel', () => {
     expect(out).toContain('aria-label="Close help"')
   })
 
+  it('explains the Browse picker', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    for (const text of ['Browse', 'Books', 'Chapters', 'Verses', 'Ctrl+click', 'Shift+click', 'Double-click a chapter']) {
+      expect(out).toContain(text)
+    }
+  })
+
   it('shows the app version', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Bible Display — version 1.2.3')

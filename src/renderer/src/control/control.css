@@ -22,7 +22,7 @@
 
 .control__panels {
   display: grid;
-  grid-template-columns: 300px 1fr 300px;
+  grid-template-columns: 300px 260px 1fr 300px;
   gap: 8px;
   padding: 8px;
   flex: 1;
@@ -38,8 +38,16 @@
   overflow-y: auto;
 }
 
+.control__panels--browse-collapsed {
+  grid-template-columns: 300px 28px 1fr 300px;
+}
+
 .control__panels--settings-collapsed {
-  grid-template-columns: 300px 1fr 28px;
+  grid-template-columns: 300px 260px 1fr 28px;
+}
+
+.control__panels--browse-collapsed.control__panels--settings-collapsed {
+  grid-template-columns: 300px 28px 1fr 28px;
 }
 
 .panel--right {
