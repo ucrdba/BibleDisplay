@@ -37,4 +37,16 @@ describe('StrongsEntryView', () => {
     expect(out).not.toContain('KJV')
     expect(out).not.toContain('()')
   })
+
+  it('renders references as plain text when not linkable', () => {
+    const out = renderToStaticMarkup(<StrongsEntryView entry={H430} linkable={false} />)
+    expect(out).toContain('<span class="strongs-ref">H433</span>')
+    expect(out).not.toContain('<button')
+  })
+
+  it('can show the id and language as a first line', () => {
+    expect(renderToStaticMarkup(<StrongsEntryView entry={H430} showId />)).toContain('H430 \u00b7 Hebrew')
+    expect(renderToStaticMarkup(<StrongsEntryView entry={G26} showId />)).toContain('G26 \u00b7 Greek')
+    expect(render(H430)).not.toContain('H430 \u00b7 Hebrew')
+  })
 })
