@@ -10,6 +10,7 @@ import type {
   RefGroup,
   SaveResult,
   ScrollCommand,
+  StrongsEntry,
   VerseCounts,
   VerseRange,
 } from './types'
@@ -19,6 +20,8 @@ export type Unsubscribe = () => void
 export interface ControlApi {
   verseCounts(): Promise<VerseCounts>
   allVerses(): Promise<VerseRow[]>
+  hasStrongs(): Promise<boolean>
+  getStrongsEntry(id: string): Promise<StrongsEntry | null>
   getSearchPrefs(): Promise<SearchPrefs>
   setSearchPrefs(prefs: SearchPrefs): Promise<void>
   loadGroups(groups: RefGroup[]): Promise<DisplayGroup[]>

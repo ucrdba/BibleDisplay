@@ -2,6 +2,8 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { buildStrongs } from '../../data/lib/strongs/buildStrongs'
+import type { Token } from '../../data/lib/strongs/usfm'
 import { BibleDb, BibleDbError } from '../../src/main/bibleDb'
 import { JOHN_3_16, makeFixtureBible } from '../helpers/fixtureBible'
 
@@ -55,5 +57,50 @@ describe('BibleDb.allVerses', () => {
     const rows = db.allVerses()
     expect(rows.map(([b, c, v]) => `${b}.${c}.${v}`)).toEqual(['41.3.3', '43.3.16', '43.3.17', '43.3.18', '43.4.1'])
     expect(rows[1]).toEqual([43, 3, 16, JOHN_3_16])
+  })
+})
+
+describe("BibleDb Strong's data", () => {
+  const t = (word: string, strongs: string | null = null): Token => ({ word, strongs })
+  const withStrongs = () => {
+    const path = makeFixtureBible()
+    buildStrongs(
+      path,
+      [{ book: 43, verses: new Map([['3:16', [t('For'), t('God', 'G2316'), t('so'), t('loved', 'G25')]]]) }],
+      [{ id: 'G25', lemma: 'x', xlit: 'agapao', pron: 'ag-ap-ah-o', derivation: '', definition: 'to love', kjvDef: 'love' }],
+    )
+    return path
+  }
+
+  it('is unavailable without the tables, and verses carry no spans', () => {
+    db = BibleDb.open(makeFixtureBible())
+    expect(db.hasStrongs).toBe(false)
+    expect(db.strongsEntry('G25')).toBeNull()
+    expect(db.getVerses({ bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 16 })[0].strongs).toEqual([])
+  })
+
+  it('returns each verse with its Strong\u2019s spans in order', () => {
+    db = BibleDb.open(withStrongs())
+    expect(db.hasStrongs).toBe(true)
+    const [v16, v17] = db.getVerses({ bookId: 43, startChapter: 3, startVerse: 16, endChapter: 3, endVerse: 17 })
+    expect(v16.strongs?.map(s => [JOHN_3_16.slice(s.start, s.end), s.id])).toEqual([
+      ['God', 'G2316'],
+      ['loved', 'G25'],
+    ])
+    expect(v17.strongs).toEqual([])
+  })
+
+  it('looks up an entry', () => {
+    db = BibleDb.open(withStrongs())
+    expect(db.strongsEntry('G25')).toEqual({
+      id: 'G25',
+      lemma: 'x',
+      xlit: 'agapao',
+      pron: 'ag-ap-ah-o',
+      derivation: '',
+      definition: 'to love',
+      kjvDef: 'love',
+    })
+    expect(db.strongsEntry('G9999')).toBeNull()
   })
 })

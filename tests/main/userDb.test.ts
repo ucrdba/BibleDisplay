@@ -139,6 +139,18 @@ describe('UserDb panel collapse', () => {
     expect(again.getPanelCollapsed('browse')).toBe(false)
   })
 
+  it("remembers the Strong's panel separately", () => {
+    const path = newPath()
+    const db = open(path)
+    expect(db.getPanelCollapsed('strongs')).toBe(false)
+    db.setPanelCollapsed('strongs', true)
+    db.close()
+    opened.pop()
+    const again = open(path)
+    expect(again.getPanelCollapsed('strongs')).toBe(true)
+    expect(again.getPanelCollapsed('settings')).toBe(false)
+  })
+
   it('keeps using the existing key for the settings panel', () => {
     const path = newPath()
     open(path).close()

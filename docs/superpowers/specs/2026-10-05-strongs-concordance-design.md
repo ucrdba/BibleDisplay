@@ -135,7 +135,7 @@ CREATE TABLE strongs_entries (
 ### 5.1 Types and main process
 
 - `src/shared/types.ts`: `interface StrongsSpan { start: number; end: number; id: string }`;
-  `BibleVerse` gains `strongs: StrongsSpan[]` (empty when unavailable);
+  `BibleVerse` gains `strongs?: StrongsSpan[]` (always set by `getVerses`, `[]` when unavailable; optional so other verse literals stay valid);
   `interface StrongsEntry { id; lemma; xlit; pron; derivation; definition; kjvDef }`.
 - `src/main/bibleDb.ts`: on open, detect whether both Strong's tables exist (`hasStrongs`);
   `getVerses` adds each verse's spans (ordered by `start_pos`) when available;

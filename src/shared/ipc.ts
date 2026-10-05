@@ -1,6 +1,8 @@
 export const IPC = {
   verseCounts: 'bible:verse-counts',
   allVerses: 'bible:all-verses',
+  hasStrongs: 'strongs:available',
+  getStrongsEntry: 'strongs:entry',
   getSearchPrefs: 'search:get-prefs',
   setSearchPrefs: 'search:set-prefs',
   loadGroups: 'bible:load-groups',

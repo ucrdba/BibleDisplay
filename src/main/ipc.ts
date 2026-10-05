@@ -36,6 +36,10 @@ export function registerIpc(ctx: MainContext): void {
 
   ipcMain.handle(IPC.verseCounts, () => ctx.bible.verseCounts())
   ipcMain.handle(IPC.allVerses, () => ctx.bible.allVerses())
+  ipcMain.handle(IPC.hasStrongs, () => ctx.bible.hasStrongs)
+  ipcMain.handle(IPC.getStrongsEntry, (_e, id: unknown) =>
+    typeof id === 'string' && /^[HG]\d+$/.test(id) ? ctx.bible.strongsEntry(id) : null,
+  )
   ipcMain.handle(IPC.getSearchPrefs, () => ctx.user.getSearchPrefs())
   ipcMain.handle(IPC.setSearchPrefs, (_e, prefs: SearchPrefs) => ctx.user.setSearchPrefs(prefs))
   ipcMain.handle(IPC.loadGroups, (_e, groups: RefGroup[]) => loadGroups(ctx.bible, ctx.user, groups))

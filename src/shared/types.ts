@@ -47,6 +47,23 @@ export interface Span {
   end: number
 }
 
+/** A word in a verse's text that has a Strong's number, e.g. { start: 4, end: 7, id: 'G2316' }. */
+export interface StrongsSpan {
+  start: number
+  end: number
+  id: string
+}
+
+export interface StrongsEntry {
+  id: string
+  lemma: string
+  xlit: string
+  pron: string
+  derivation: string
+  definition: string
+  kjvDef: string
+}
+
 export interface Highlight extends Span {
   id: number
   color: string
@@ -58,6 +75,8 @@ export interface BibleVerse {
   verse: number
   text: string
   redLetter: Span[]
+  /** Strong's-tagged words; [] when the data isn't installed. Optional so verse literals elsewhere stay valid. */
+  strongs?: StrongsSpan[]
 }
 
 export interface VerseData extends BibleVerse {

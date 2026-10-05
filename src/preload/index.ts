@@ -12,6 +12,8 @@ const api: BibleApi = {
   control: {
     verseCounts: () => ipcRenderer.invoke(IPC.verseCounts),
     allVerses: () => ipcRenderer.invoke(IPC.allVerses),
+    hasStrongs: () => ipcRenderer.invoke(IPC.hasStrongs),
+    getStrongsEntry: id => ipcRenderer.invoke(IPC.getStrongsEntry, id),
     getSearchPrefs: () => ipcRenderer.invoke(IPC.getSearchPrefs),
     setSearchPrefs: prefs => ipcRenderer.invoke(IPC.setSearchPrefs, prefs),
     loadGroups: groups => ipcRenderer.invoke(IPC.loadGroups, groups),

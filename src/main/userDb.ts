@@ -49,7 +49,7 @@ function connect(path: string): Database.Database {
 }
 
 // "settings" keeps its original key so existing saved choices survive.
-const PANEL_KEYS: Record<PanelName, string> = { settings: 'rightPanelCollapsed', browse: 'browsePanelCollapsed' }
+const PANEL_KEYS: Record<PanelName, string> = { settings: 'rightPanelCollapsed', browse: 'browsePanelCollapsed', strongs: 'strongsPanelCollapsed' }
 
 export class UserDb {
   private constructor(private readonly db: Database.Database) {}
