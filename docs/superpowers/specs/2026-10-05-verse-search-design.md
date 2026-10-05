@@ -108,11 +108,11 @@ All matching logic lives in `src/shared/search.ts` as pure functions.
 ### 4.4 Regex
 
 - The query is a JavaScript regular expression, compiled with flags `gi`, matched against each
-  verse's (apostrophe-normalized) text.
+  verse's (apostrophe-normalized) text. Curly apostrophes in the pattern are normalized too.
 - A pattern that only matches the empty string still counts the verse as a match; zero-length
   matches are not bolded.
-- A pattern that fails to compile returns an error (message derived from the `SyntaxError`, e.g.
-  `Unfinished pattern: missing )`).
+- A pattern that fails to compile returns an error: `Invalid pattern: ` followed by the last part of
+  the `SyntaxError` message (e.g. `Invalid pattern: Unterminated group`).
 
 ### 4.5 Bold marks
 
@@ -123,7 +123,7 @@ verse, as `{start, end}` spans, sorted and merged where they overlap.
 
 ```ts
 type SearchMode = 'all' | 'phrase' | 'any' | 'regex'
-type SearchScope = 'bible' | 'ot' | 'nt' | 'gospels' | { bookId: number }
+type SearchScope = 'bible' | 'ot' | 'nt' | 'gospels' | `book:${number}`  // strings, so they serialize and work as <option> values
 interface SearchQuery { text: string; mode: SearchMode; scope: SearchScope }
 type VerseRow = [bookId: number, chapter: number, verse: number, text: string]
 interface SearchHit { bookId: number; chapter: number; verse: number; text: string; marks: Span[] }
@@ -154,7 +154,9 @@ The worker only calls `searchVerses`.
 
 ### 5.3 `useSearch` hook
 
-`src/renderer/src/control/useSearch.ts` owns the worker and exposes
+The timing logic lives in a plain class, `src/renderer/src/control/searchRunner.ts` (no React, so
+it can be tested with fake timers). `src/renderer/src/control/useSearch.ts` is a thin hook around it
+that owns the worker and exposes
 `{ status, total, hits, note }` for the current query.
 - **Debounce:** a search starts 250 ms after the last change to text, mode, or scope.
 - **Cancellation:** if a new search starts while one is in flight, the worker is terminated and a
@@ -172,6 +174,7 @@ The worker is created through an injectable factory so tests can supply a fake.
 **New**
 - `src/shared/search.ts` — query parsing, compiling, scope, `searchVerses`.
 - `src/renderer/src/control/search.worker.ts`
+- `src/renderer/src/control/searchRunner.ts` — debounce, cancellation, timeout, staleness.
 - `src/renderer/src/control/useSearch.ts`
 - `src/renderer/src/control/SearchPanel.tsx` — box, dropdowns, status, results list.
 - `src/renderer/src/control/ListTabs.tsx` — the Imported | Recent | Search tab strip.
@@ -209,7 +212,7 @@ The worker is created through an injectable factory so tests can supply a fake.
 - `tests/main/bibleDb.test.ts` — `allVerses()` on the fixture Bible (order, contents).
 - `tests/main/userDb.test.ts` — search prefs round-trip; defaults on missing/invalid stored value.
 - `tests/renderer/keys.test.ts` — Ctrl+F maps to the search action.
-- `tests/renderer/useSearch.test.ts` — debounce, stale replies ignored, timeout restart, error
+- `tests/renderer/searchRunner.test.ts` — debounce, stale replies ignored, timeout restart, error
   keeps previous hits (fake timers, fake worker factory).
 - `tests/renderer/SearchPanel.test.tsx` — rendering, bold marks, click / Ctrl+click / Shift+click /
   Enter producing the right reference text, Esc behavior, notes and hints (fake worker that calls
