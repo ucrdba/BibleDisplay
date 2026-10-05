@@ -17,6 +17,8 @@ export const IPC = {
   listFonts: 'fonts:list',
   getDisplayInfo: 'display:get-info',
   setDisplayMonitor: 'display:set-monitor',
+  getPanelCollapsed: 'panel:get-collapsed',
+  setPanelCollapsed: 'panel:set-collapsed',
   present: 'display:present',
   scroll: 'display:scroll',
   displayReady: 'display:ready',

@@ -109,3 +109,18 @@ describe('UserDb display monitor', () => {
     expect(again.getDisplayMonitorId()).toBeNull()
   })
 })
+
+describe('UserDb right panel', () => {
+  it('starts expanded and remembers collapsing across reopening', () => {
+    const path = newPath()
+    const db = open(path)
+    expect(db.getPanelCollapsed()).toBe(false)
+    db.setPanelCollapsed(true)
+    db.close()
+    opened.pop()
+    const again = open(path)
+    expect(again.getPanelCollapsed()).toBe(true)
+    again.setPanelCollapsed(false)
+    expect(again.getPanelCollapsed()).toBe(false)
+  })
+})

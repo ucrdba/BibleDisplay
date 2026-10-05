@@ -179,6 +179,17 @@ export class UserDb {
       .run('displayMonitor', JSON.stringify(id))
   }
 
+  getPanelCollapsed(): boolean {
+    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('rightPanelCollapsed') as { value: string } | undefined
+    return row?.value === 'true'
+  }
+
+  setPanelCollapsed(collapsed: boolean): void {
+    this.db
+      .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
+      .run('rightPanelCollapsed', JSON.stringify(collapsed))
+  }
+
   close(): void {
     this.db.close()
   }

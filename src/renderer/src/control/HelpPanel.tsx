@@ -136,6 +136,11 @@ export function HelpPanel({ version, onClose }: Props) {
 
         <h3>Display on</h3>
         <p>Choose which monitor shows the verses (right panel).</p>
+        <h3>Hide settings</h3>
+        <p>
+          Click » at the top of the right panel to hide it and give the preview more room; click « to bring it back. Keyboard
+          shortcuts and the highlight toolbar still work while it is hidden.
+        </p>
       </div>
     </div>
   )
