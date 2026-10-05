@@ -41,4 +41,10 @@ describe('keyToAction', () => {
     expect(k('x')).toBeNull()
     expect(k('b', false, true)).toBeNull()
   })
+
+  it('opens search with Ctrl+F, even while typing', () => {
+    expect(k('f', true, true)).toEqual({ type: 'search' })
+    expect(k('F', false, true)).toEqual({ type: 'search' })
+    expect(k('f')).toBeNull()
+  })
 })

@@ -3,21 +3,25 @@ import { toVerseList, toVerseText } from '../../../shared/exportVerses'
 import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type ListSelection } from '../../../shared/listSelection'
 import { parseReferences } from '../../../shared/parser'
 import { buildPrintHtml } from '../../../shared/printHtml'
+import { DEFAULT_SEARCH_PREFS, hitReference, parseSearchPrefix, type SearchPrefs, type SearchQuery } from '../../../shared/search'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
 import './control.css'
 import { HelpPanel } from './HelpPanel'
 import { ImportedList } from './ImportedList'
 import { keyToAction } from './keys'
+import { ListTabs, type ListTab } from './ListTabs'
 import { MonitorSelect } from './MonitorSelect'
 import { PreviewPanel } from './PreviewPanel'
 import { RecentList } from './RecentList'
 import { ReferenceInput } from './ReferenceInput'
 import type { ClickMods } from './SelectableList'
+import { SearchPanel } from './SearchPanel'
 import { SelectedList } from './SelectedList'
 import { SidePanel } from './SidePanel'
 import { StylePanel } from './StylePanel'
 import { useBibleIndex } from './useBibleIndex'
+import { useSearch } from './useSearch'
 
 const api = () => window.bible.control
 
@@ -51,6 +55,13 @@ export function ControlScreen() {
   const [selection, setSelection] = useState<VerseRange[]>([])
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
   const saveNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [listTab, setListTab] = useState<ListTab>('imported')
+  const [searchText, setSearchText] = useState('')
+  const [searchPrefs, setSearchPrefs] = useState<SearchPrefs>(DEFAULT_SEARCH_PREFS)
+  const [searchSel, setSearchSel] = useState<ListSelection>(EMPTY_SELECTION)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchQuery = useMemo<SearchQuery>(() => ({ text: searchText, ...searchPrefs }), [searchText, searchPrefs])
+  const search = useSearch(searchQuery)
 
   const importedSelected = listSel.list === 'imported' ? listSel.sel.selected : []
   const recentSelected = listSel.list === 'recent' ? listSel.sel.selected : []
@@ -59,6 +70,7 @@ export function ControlScreen() {
   useEffect(() => {
     const a = api()
     void a.getStyles().then(setStyles)
+    void a.getSearchPrefs().then(setSearchPrefs)
     void a.listRecent().then(setRecent)
     void a.listImported().then(setImported)
     void a.listFonts().then(setFonts)
@@ -67,6 +79,14 @@ export function ControlScreen() {
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
+
+  // New results invalidate the old selection.
+  useEffect(() => setSearchSel(EMPTY_SELECTION), [search.hits])
+
+  // Opening the Search tab retries loading the Bible text if it failed.
+  useEffect(() => {
+    if (listTab === 'search' && search.status === 'unavailable') search.retry()
+  }, [listTab])
 
   const present = useCallback(async (next: RefGroup[], nextBlank: boolean) => {
     const loaded = await api().loadGroups(next)
@@ -121,6 +141,53 @@ export function ControlScreen() {
     window.getSelection()?.removeAllRanges()
     await present(refGroups, blank)
   }
+
+  const updateSearchPrefs = (patch: Partial<SearchPrefs>) => {
+    const next = { ...searchPrefs, ...patch }
+    setSearchPrefs(next)
+    void api().setSearchPrefs(next)
+  }
+
+  const openSearch = (text?: string) => {
+    if (text !== undefined) setSearchText(text)
+    setListTab('search')
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus()
+      searchInputRef.current?.select()
+    })
+  }
+
+  // The main box: `?words` or `/pattern/` opens Search; anything else is references.
+  const submitInput = () => {
+    const prefix = parseSearchPrefix(input)
+    if (!prefix) {
+      void show(input)
+      return
+    }
+    updateSearchPrefs({ mode: prefix.mode })
+    openSearch(prefix.text)
+  }
+
+  const showHits = (indices: number[]) => {
+    const text = indices
+      .map(i => search.hits[i])
+      .filter(h => h !== undefined)
+      .map(hitReference)
+      .join(', ')
+    if (!text) return
+    resetListSel()
+    setInput(text)
+    setErrors([])
+    void show(text, false)
+  }
+
+  const clickSearch = (index: number, mods: ClickMods) => {
+    const next = clickSelection(searchSel, index, mods)
+    setSearchSel(next)
+    showHits(next.selected)
+  }
+
+  const submitSearch = () => showHits(searchSel.selected.length > 0 ? searchSel.selected : [0])
 
   const importList = async () => {
     const result = await api().importList()
@@ -206,8 +273,8 @@ export function ControlScreen() {
     [imported, index],
   )
 
-  const latest = useRef({ styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen })
-  latest.current = { styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen }
+  const latest = useRef({ styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen, openSearch })
+  latest.current = { styles, toggleBlank, updateStyles, clear, helpOpen, setHelpOpen, openSearch }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -231,6 +298,7 @@ export function ControlScreen() {
         if (cur.styles) cur.updateStyles({ ...cur.styles, scale: stepScale(cur.styles.scale, action.dir) })
       } else if (action.type === 'clear') cur.clear()
       else if (action.type === 'help') cur.setHelpOpen(true)
+      else if (action.type === 'search') cur.openSearch()
       else cur.toggleBlank()
     }
     window.addEventListener('keydown', onKey)
@@ -256,12 +324,12 @@ export function ControlScreen() {
               setInput(v)
               setErrors([])
             }}
-            onSubmit={() => void show(input)}
+            onSubmit={submitInput}
             errors={errors}
             index={index}
           />
           <div className="button-row">
-            <button type="button" className="btn btn--primary" onClick={() => void show(input)}>
+            <button type="button" className="btn btn--primary" onClick={submitInput}>
               Show ▶
             </button>
             <button type="button" className="btn" onClick={clear}>
@@ -269,24 +337,44 @@ export function ControlScreen() {
             </button>
           </div>
           <SelectedList groups={refGroups} onRemove={removeGroup} />
-          <ImportedList
-            items={imported}
-            problems={importProblems}
-            selected={importedSelected}
-            error={importError}
-            onClick={(i, mods) => clickList('imported', i, mods)}
-            onContext={i => contextList('imported', i)}
-            onDelete={() => void deleteFromList('imported')}
-            onImport={() => void importList()}
-            onClear={() => void clearImported()}
-          />
-          <RecentList
-            items={recent}
-            selected={recentSelected}
-            onClick={(i, mods) => clickList('recent', i, mods)}
-            onContext={i => contextList('recent', i)}
-            onDelete={() => void deleteFromList('recent')}
-          />
+          <ListTabs active={listTab} onChange={setListTab} />
+          {listTab === 'imported' && (
+            <ImportedList
+              items={imported}
+              problems={importProblems}
+              selected={importedSelected}
+              error={importError}
+              onClick={(i, mods) => clickList('imported', i, mods)}
+              onContext={i => contextList('imported', i)}
+              onDelete={() => void deleteFromList('imported')}
+              onImport={() => void importList()}
+              onClear={() => void clearImported()}
+            />
+          )}
+          {listTab === 'recent' && (
+            <RecentList
+              items={recent}
+              selected={recentSelected}
+              onClick={(i, mods) => clickList('recent', i, mods)}
+              onContext={i => contextList('recent', i)}
+              onDelete={() => void deleteFromList('recent')}
+            />
+          )}
+          {listTab === 'search' && (
+            <SearchPanel
+              inputRef={searchInputRef}
+              text={searchText}
+              mode={searchPrefs.mode}
+              scope={searchPrefs.scope}
+              state={search}
+              selected={searchSel.selected}
+              onText={setSearchText}
+              onMode={mode => updateSearchPrefs({ mode })}
+              onScope={scope => updateSearchPrefs({ scope })}
+              onClick={clickSearch}
+              onSubmit={submitSearch}
+            />
+          )}
         </aside>
 
         <main className="panel panel--middle">

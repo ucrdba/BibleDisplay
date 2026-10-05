@@ -29,4 +29,11 @@ describe('HelpPanel', () => {
     expect(out).toContain('may not be sold')
     expect(out).toContain('public domain')
   })
+
+  it('explains search', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    for (const text of ['Search', 'Ctrl', 'All words', 'Exact phrase', 'Any word', 'Regex', '?still waters']) {
+      expect(out).toContain(text)
+    }
+  })
 })

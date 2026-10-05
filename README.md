@@ -13,6 +13,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Highlight: select words in the preview, then pick a color in the toolbar that pops up under them. **Remove highlight** clears the selected part.
 - Import a list: click **Import list…** and choose a `.txt` file with one reference per line (e.g. your sermon's verses). Click a line to show it; the list stays until you import another file or click **Clear list**. Lines with problems are marked ⚠.
 - Imported and Recent lists: click a line to show it; **Ctrl+click** adds or removes lines, **Shift+click** selects a range — all selected lines show together. Right-click (or press **Delete**) to delete the selected lines from the list.
+- Search: press **Ctrl+F** (or open the **Search** tab) and type. Modes: **All words** (any order; `"quoted phrase"`; `faith*` for word starts), **Exact phrase** (`still wat`), **Any word**, and **Regex**. Limit it to the Old or New Testament, the Gospels, or one book. Click results to show them (Ctrl/Shift+click for several). In the verse box, `?still waters` or `/still\s+wat/` opens a search.
 - Right-click the live preview to **Save verse list…** (re-importable), **Save verse text…** (full text), or **Print…**.
 - **Display on** (right panel): pick which monitor shows the verses; your choice is remembered.
 - **»** at the top of the right panel hides it to give the preview more room; **«** brings it back. Shortcuts and the highlight toolbar still work while it is hidden.

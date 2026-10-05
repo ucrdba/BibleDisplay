@@ -6,6 +6,7 @@ export type KeyAction =
   | { type: 'toggleBlank' }
   | { type: 'clear' }
   | { type: 'help' }
+  | { type: 'search' }
 
 export interface KeyInfo {
   key: string
@@ -22,6 +23,7 @@ export function keyToAction(k: KeyInfo): KeyAction | null {
   if (k.ctrlKey) {
     if (k.key === '=' || k.key === '+') return { type: 'scale', dir: 1 }
     if (k.key === '-' || k.key === '_') return { type: 'scale', dir: -1 }
+    if (k.key === 'f' || k.key === 'F') return { type: 'search' }
     return null
   }
   if (k.key === 'PageUp') return scroll('pageUp')

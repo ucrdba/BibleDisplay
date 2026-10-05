@@ -98,6 +98,9 @@ export function HelpPanel({ version, onClose }: Props) {
           <li>
             <kbd>F1</kbd> = this help
           </li>
+          <li>
+            <kbd>Ctrl</kbd>+<kbd>F</kbd> = search
+          </li>
         </ul>
         <p>Note: B, arrows, Home/End work when the cursor is not in the verse box.</p>
 
@@ -105,6 +108,32 @@ export function HelpPanel({ version, onClose }: Props) {
         <p>
           Click a line to show it; <kbd>Ctrl+click</kbd> adds or removes lines; <kbd>Shift+click</kbd> selects a
           range; all selected lines show together. Right-click (or Delete) to delete selected lines.
+        </p>
+
+        <h3>Search</h3>
+        <p>
+          Press <kbd>Ctrl</kbd>+<kbd>F</kbd> or open the Search tab and type. Results appear as you type, with the
+          matching words in bold. Click a result to show it; <kbd>Ctrl+click</kbd> and <kbd>Shift+click</kbd> show
+          several; <kbd>Enter</kbd> shows the selected results (or the first). <kbd>Esc</kbd> clears the search.
+        </p>
+        <ul>
+          <li>
+            <b>All words</b>: every word, in any order. <code>&quot;still waters&quot;</code> in quotes is a phrase;{' '}
+            <code>faith*</code> also finds faithful.
+          </li>
+          <li>
+            <b>Exact phrase</b>: the words in order; the first and last can be partial (<code>still wat</code>).
+          </li>
+          <li>
+            <b>Any word</b>: verses with at least one of the words.
+          </li>
+          <li>
+            <b>Regex</b>: a regular expression, e.g. <code>\bgrace\b.*\bpeace\b</code>.
+          </li>
+        </ul>
+        <p>
+          The second list limits the search to the Old or New Testament, the Gospels, or one book. In the verse box,{' '}
+          <code>?still waters</code> searches for words and <code>/still\s+wat/</code> searches with a regex.
         </p>
 
         <h3>Import list</h3>
