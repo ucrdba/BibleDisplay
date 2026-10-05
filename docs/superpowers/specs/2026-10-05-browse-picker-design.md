@@ -40,8 +40,8 @@ select several exactly as Windows list selection does. Selections may span chapt
 ### 3.2 Navigating (never changes the display)
 
 - **Books**: the 66 full book names in canonical order, with a thin divider between Malachi and
-  Matthew. Clicking a book selects it as the current book and lists its chapters; for a
-  one-chapter book (Obadiah, Philemon, 2 John, 3 John, Jude) chapter 1 is selected automatically.
+  Matthew. Clicking a book selects it as the current book, lists its chapters, and makes
+  chapter 1 the current chapter (so one-chapter books such as Jude show their verses at once).
 - **Chapters**: `1 … n` for the current book. Clicking one makes it the current chapter and lists
   its verses.
 - **Verses**: `1 … n` for the current chapter.
@@ -105,7 +105,7 @@ interface ClickMods { ctrl: boolean; shift: boolean }
 ### 4.2 Functions
 
 - `isSelected(passages, v): boolean`
-- `selectedChapters(passages, bookId, index): Set<number>` and `selectedBooks(passages): Set<number>`
+- `selectedChapters(passages, bookId): Set<number>` and `selectedBooks(passages): Set<number>`
   — for the ● markers.
 - `toggleVerse(passages, v, index): Passage[]` — §3.3 add/remove/join/split rules. Editing a
   `whole` passage makes it (and any split pieces) `whole: false`.
@@ -116,7 +116,9 @@ interface ClickMods { ctrl: boolean; shift: boolean }
   — the §3.3 table.
 - `toReferenceText(passages): string` — every passage with its book's 3-letter code, joined by
   `, `: whole → `Psa 23` / `Psa 23-24`; same chapter → `Joh 3:16` / `Joh 3:16-18`; across
-  chapters → `Joh 3:36-4:2`. Must round-trip through `parseReferences` to identical spans and
+  chapters → `Joh 3:36-4:2`. A whole passage in a one-chapter book is written as a verse range
+  (`Jud 1:1-25`), because the parser reads `Jud 1` as verse 1; it round-trips with
+  `whole: false`. Must otherwise round-trip through `parseReferences` to identical spans and
   `whole` flags.
 
 "Touching" uses verse counts from the existing `BibleIndex`: v touches a passage if it is the
