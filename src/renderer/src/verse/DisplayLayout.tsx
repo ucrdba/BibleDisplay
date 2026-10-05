@@ -31,7 +31,13 @@ function Band({ strongs, styles }: { strongs: DisplayStrongs; styles: Styles }) 
   const [overflow, setOverflow] = useState(false)
   useLayoutEffect(() => {
     const el = ref.current
-    if (el) setOverflow(el.scrollHeight > el.clientHeight + 1)
+    if (!el) return
+    const measure = () => setOverflow(el.scrollHeight > el.clientHeight + 1)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [strongs, styles])
   return (
     <div ref={ref} className={`strongs-band${overflow ? ' strongs-band--overflow' : ''}`} style={bandStyle(styles)}>

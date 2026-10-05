@@ -52,7 +52,7 @@ export function StrongsPanel({ state, collapsed, onToggle, onLink, onBack, onDis
           </span>
         )}
         <label className="strongs-panel__display" title="Also show the entry on the display, under the verses">
-          <input type="checkbox" checked={onDisplay} onChange={e => onToggleDisplay(e.target.checked)} /> Show on display
+          <input type="checkbox" checked={onDisplay} onChange={e => { onToggleDisplay(e.target.checked); e.currentTarget.blur() }} /> Show on display
         </label>
         {!collapsed && state.back.length > 0 && (
           <button type="button" className="btn strongs-panel__back" onClick={onBack}>

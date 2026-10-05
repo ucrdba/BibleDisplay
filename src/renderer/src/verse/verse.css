@@ -87,3 +87,7 @@
 .strongs-band .strongs-entry__field {
   margin: 0.15em 0;
 }
+
+.strongs-band .strongs-ref {
+  padding: 0;
+}

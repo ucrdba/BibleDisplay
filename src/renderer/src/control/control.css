@@ -769,3 +769,7 @@ input[type='color'] {
   gap: 4px;
   white-space: nowrap;
 }
+
+.preview__viewport .display-layout__verses {
+  overflow-y: hidden;
+}

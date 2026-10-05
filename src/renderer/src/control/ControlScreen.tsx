@@ -104,9 +104,6 @@ export function ControlScreen() {
     api().present({ groups, blank, strongs: shownStrongs })
   }, [groups, blank, shownStrongs])
 
-  // New verses on screen: the looked-up word is no longer shown.
-  useEffect(() => setStrongsMark(null), [groups])
-
   // New results invalidate the old selection.
   useEffect(() => setSearchSel(EMPTY_SELECTION), [search.hits])
 
@@ -119,6 +116,7 @@ export function ControlScreen() {
     const loaded = await api().loadGroups(next)
     setRefGroups(next)
     setGroups(loaded)
+    setStrongsMark(null) // new verses: the looked-up word is no longer shown
     setSelection([])
   }, [])
 
