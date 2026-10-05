@@ -36,6 +36,7 @@ interface Props {
   onSaveList(): void
   onSaveText(): void
   onPrint(): void
+  onAddRecent(): void
   onClear(): void
 }
 
@@ -59,6 +60,7 @@ export function PreviewPanel({
   onSaveList,
   onSaveText,
   onPrint,
+  onAddRecent,
   onClear,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
@@ -160,6 +162,7 @@ export function PreviewPanel({
           onSaveList={onSaveList}
           onSaveText={onSaveText}
           onPrint={onPrint}
+          onAddRecent={onAddRecent}
           onClear={onClear}
         />
       )}

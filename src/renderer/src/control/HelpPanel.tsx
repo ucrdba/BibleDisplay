@@ -169,6 +169,7 @@ export function HelpPanel({ version, onClose }: Props) {
           "Microsoft Print to PDF" for a PDF.
         </p>
         <p>
+          Right-click → <strong>Add to Recent</strong> to save what is on screen to the Recent list.
           Right-click → <strong>Clear</strong> to remove everything from the preview and the display (the same as
           the Clear button or Esc).
         </p>

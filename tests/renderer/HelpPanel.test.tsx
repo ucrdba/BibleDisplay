@@ -21,6 +21,7 @@ describe('HelpPanel', () => {
   it('explains Clear in the preview right-click menu', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toMatch(/Right-click[^<]*<strong>Clear<\/strong>/)
+    expect(out).toContain('<strong>Add to Recent</strong>')
   })
 
   it('shows the app version', () => {

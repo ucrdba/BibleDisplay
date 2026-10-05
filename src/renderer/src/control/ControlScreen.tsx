@@ -122,6 +122,13 @@ export function ControlScreen() {
     void present([], blank).then(() => setBrowseJump(n => n + 1))
   }
 
+  // Saves what is on screen (not the verse box text) as a Recent entry.
+  const addShownToRecent = async () => {
+    if (refGroups.length === 0) return
+    await api().addRecent(toReferenceText(refGroups))
+    setRecent(await api().listRecent())
+  }
+
   const removeGroup = (i: number) => {
     void present(refGroups.filter((_, j) => j !== i), blank).then(() => setBrowseJump(n => n + 1))
   }
@@ -436,6 +443,7 @@ export function ControlScreen() {
               onSaveList={saveList}
               onSaveText={saveText}
               onPrint={() => void print()}
+              onAddRecent={() => void addShownToRecent()}
               onClear={clear}
             />
           )}

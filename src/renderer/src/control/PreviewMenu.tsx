@@ -10,11 +10,12 @@ interface Props {
   onSaveList(): void
   onSaveText(): void
   onPrint(): void
+  onAddRecent(): void
   onClear(): void
 }
 
 /** The live preview's right-click menu. */
-export function PreviewMenu({ x, y, menuRef, canSave, onClose, onSaveList, onSaveText, onPrint, onClear }: Props) {
+export function PreviewMenu({ x, y, menuRef, canSave, onClose, onSaveList, onSaveText, onPrint, onAddRecent, onClear }: Props) {
   const item = (label: string, action: () => void, autoFocus = false) => (
     <button
       type="button"
@@ -47,6 +48,7 @@ export function PreviewMenu({ x, y, menuRef, canSave, onClose, onSaveList, onSav
       {item('Save verse text…', onSaveText)}
       {item('Print…', onPrint)}
       <div className="context-menu__sep" role="separator" />
+      {item('Add to Recent', onAddRecent)}
       {item('Clear', onClear)}
     </div>
   )
