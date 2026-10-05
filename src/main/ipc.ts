@@ -49,6 +49,7 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.addRecent, (_e, input: string) => ctx.user.addRecent(input))
   ipcMain.handle(IPC.listRecent, () => ctx.user.listRecent())
   ipcMain.handle(IPC.removeRecent, (_e, inputs: string[]) => ctx.user.removeRecent(inputs))
+  ipcMain.handle(IPC.clearRecent, () => ctx.user.clearRecent())
   ipcMain.handle(IPC.importList, async (): Promise<ImportResult> => {
     const options: Electron.OpenDialogOptions = {
       title: 'Import verse list',

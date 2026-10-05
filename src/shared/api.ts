@@ -29,6 +29,7 @@ export interface ControlApi {
   addRecent(input: string): Promise<void>
   listRecent(): Promise<string[]>
   removeRecent(inputs: string[]): Promise<void>
+  clearRecent(): Promise<void>
   importList(): Promise<ImportResult>
   saveTextFile(suggestedName: string, content: string): Promise<SaveResult>
   printHtml(html: string): Promise<PrintResult>

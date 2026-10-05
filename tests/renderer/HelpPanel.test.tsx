@@ -24,6 +24,11 @@ describe('HelpPanel', () => {
     expect(out).toContain('<strong>Add to Recent</strong>')
   })
 
+  it('explains clearing the Recent list', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    expect(out).toContain('<strong>Clear list</strong> on the Recent tab')
+  })
+
   it('shows the app version', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Bible Display — version 1.2.3')

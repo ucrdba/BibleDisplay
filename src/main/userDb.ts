@@ -136,6 +136,10 @@ export class UserDb {
     })()
   }
 
+  clearRecent(): void {
+    this.db.prepare('DELETE FROM recent').run()
+  }
+
   listRecent(): string[] {
     const rows = this.db.prepare('SELECT input FROM recent ORDER BY id DESC LIMIT ?').all(RECENT_LIMIT) as {
       input: string

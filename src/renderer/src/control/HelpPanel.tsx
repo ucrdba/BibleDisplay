@@ -109,6 +109,10 @@ export function HelpPanel({ version, onClose }: Props) {
           Click a line to show it; <kbd>Ctrl+click</kbd> adds or removes lines; <kbd>Shift+click</kbd> selects a
           range; all selected lines show together. Right-click (or Delete) to delete selected lines.
         </p>
+        <p>
+          <strong>Clear list</strong> on the Recent tab empties the whole Recent list (it asks first, since it can't be
+          undone).
+        </p>
 
         <h3>Search</h3>
         <p>

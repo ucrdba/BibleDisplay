@@ -82,6 +82,16 @@ describe('UserDb highlights', () => {
 })
 
 describe('UserDb recent inputs', () => {
+  it('clears the whole list and keeps working afterwards', () => {
+    const db = open(newPath())
+    db.addRecent('jn 3:16')
+    db.addRecent('ps 23')
+    db.clearRecent()
+    expect(db.listRecent()).toEqual([])
+    db.addRecent('rom 5:8')
+    expect(db.listRecent()).toEqual(['rom 5:8'])
+  })
+
   it('lists newest first, removes duplicates, and keeps 20', () => {
     const db = open(newPath())
     for (let i = 1; i <= 22; i++) db.addRecent(`jn 3:${i}`)

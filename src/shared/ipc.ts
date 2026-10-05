@@ -17,6 +17,7 @@ export const IPC = {
   clearImported: 'imported:clear',
   removeImported: 'imported:remove',
   removeRecent: 'recent:remove',
+  clearRecent: 'recent:clear',
   listFonts: 'fonts:list',
   getDisplayInfo: 'display:get-info',
   setDisplayMonitor: 'display:set-monitor',

@@ -21,7 +21,7 @@ describe('SelectedList', () => {
 describe('RecentList', () => {
   it('lists recent inputs', () => {
     const out = renderToStaticMarkup(
-      <RecentList items={['jn 3:16', 'ps 23']} selected={[]} onClick={() => {}} onContext={() => {}} onDelete={() => {}} />,
+      <RecentList items={['jn 3:16', 'ps 23']} selected={[]} onClick={() => {}} onContext={() => {}} onDelete={() => {}} onClear={() => {}} />,
     )
     expect(out).toContain('jn 3:16')
     expect(out).toContain('ps 23')

@@ -266,6 +266,12 @@ export function ControlScreen() {
     void show(text, false, true)
   }
 
+  const clearRecent = async () => {
+    await api().clearRecent()
+    setRecent(await api().listRecent())
+    if (listSel.list === 'recent') resetListSel()
+  }
+
   const clearImported = async () => {
     await api().clearImported()
     setImported([])
@@ -399,6 +405,7 @@ export function ControlScreen() {
               onClick={(i, mods) => clickList('recent', i, mods)}
               onContext={i => contextList('recent', i)}
               onDelete={() => void deleteFromList('recent')}
+              onClear={() => void clearRecent()}
             />
           )}
           {listTab === 'search' && (
