@@ -4,7 +4,9 @@ import type { DisplayGroup, DisplayInfo, ScrollCommand, VerseRange } from '../..
 import { VerseView } from '../verse/VerseView'
 import { HighlightToolbar } from './HighlightToolbar'
 import { PreviewMenu } from './PreviewMenu'
-import { selectionToRanges } from './selection'
+import type { VersePoint } from '../../../shared/strongs'
+import { lookupTarget } from '../../../shared/strongs'
+import { pointToVerseOffset, selectionToRanges, verseTextRange } from './selection'
 
 interface Size {
   width: number
@@ -38,11 +40,39 @@ interface Props {
   onPrint(): void
   onAddRecent(): void
   onClear(): void
+  /** Strong's data is installed: words can be looked up and hovered. */
+  strongsEnabled: boolean
+  /** The looked-up word to tint, if any. */
+  strongsMark: VerseRange | null
+  onLookup(p: VersePoint): void
 }
 
 export function previewScale(panel: Size, display: Size): number {
   if (!panel.width || !panel.height || !display.width || !display.height) return 0
   return Math.min(panel.width / display.width, panel.height / display.height)
+}
+
+type HighlightRegistryLike = { set(name: string, h: unknown): void; delete(name: string): void }
+const highlights = (): HighlightRegistryLike | null =>
+  typeof CSS !== 'undefined' && 'highlights' in CSS ? (CSS as unknown as { highlights: HighlightRegistryLike }).highlights : null
+
+function setHighlight(name: string, range: Range | null) {
+  const reg = highlights()
+  if (!reg || typeof Highlight === 'undefined') return
+  if (range) reg.set(name, new Highlight(range))
+  else reg.delete(name)
+}
+
+/** The text node and offset under a screen point. */
+function caretAt(x: number, y: number): { node: Node; offset: number } | null {
+  const doc = document as Document & {
+    caretPositionFromPoint?(x: number, y: number): { offsetNode: Node; offset: number } | null
+    caretRangeFromPoint?(x: number, y: number): Range | null
+  }
+  const p = doc.caretPositionFromPoint?.(x, y)
+  if (p) return { node: p.offsetNode, offset: p.offset }
+  const r = doc.caretRangeFromPoint?.(x, y)
+  return r ? { node: r.startContainer, offset: r.startOffset } : null
 }
 
 export function PreviewPanel({
@@ -62,6 +92,9 @@ export function PreviewPanel({
   onPrint,
   onAddRecent,
   onClear,
+  strongsEnabled,
+  strongsMark,
+  onLookup,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
   const viewport = useRef<HTMLDivElement>(null)
@@ -93,13 +126,53 @@ export function PreviewPanel({
     if (viewport.current) viewport.current.scrollTop = scrollTop
   }, [scrollTop, groups])
 
+  const verses = groups.flatMap(g => g.verses)
+
+  // Tint the looked-up word in the preview (never on the display).
+  useEffect(() => {
+    if (!viewport.current || !strongsMark) {
+      setHighlight('strongs-current', null)
+      return
+    }
+    const m = strongsMark
+    setHighlight('strongs-current', verseTextRange(viewport.current, `${m.bookId}.${m.chapter}.${m.verse}`, m.start, m.end))
+  }, [strongsMark, groups])
+
+  useEffect(() => () => {
+    setHighlight('strongs-hover', null)
+    setHighlight('strongs-current', null)
+  }, [])
+
+  const pointAt = (x: number, y: number): VersePoint | null => {
+    const c = viewport.current ? caretAt(x, y) : null
+    return c && viewport.current ? pointToVerseOffset(viewport.current, c.node, c.offset) : null
+  }
+
+  const handleMouseMove = (e: ReactMouseEvent<HTMLDivElement>) => {
+    if (!strongsEnabled || !viewport.current) return
+    const p = pointAt(e.clientX, e.clientY)
+    const target = p ? lookupTarget(verses, p) : null
+    if (p && target?.kind === 'tagged') {
+      setHighlight('strongs-hover', verseTextRange(viewport.current, `${p.bookId}.${p.chapter}.${p.verse}`, target.span.start, target.span.end))
+      viewport.current.style.cursor = 'pointer'
+    } else {
+      setHighlight('strongs-hover', null)
+      viewport.current.style.cursor = ''
+    }
+  }
+
   const k = previewScale(panel, info)
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: ReactMouseEvent<HTMLDivElement>) => {
     const sel = window.getSelection()
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed || !viewport.current) {
       onSelect([])
       setAnchor(null)
+      // A click (no text dragged) looks up the word under the pointer.
+      if (e.button === 0) {
+        const p = pointAt(e.clientX, e.clientY)
+        if (p) onLookup(p)
+      }
       return
     }
     const range = sel.getRangeAt(0)
@@ -135,6 +208,8 @@ export function PreviewPanel({
           className="preview__viewport"
           ref={viewport}
           onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHighlight('strongs-hover', null)}
           style={{ width: info.width, height: info.height, transform: `scale(${k})` }}
         >
           <VerseView groups={groups} styles={styles} blank={blank} />

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { bookById } from '../../../shared/books'
 import { toVerseList, toVerseText } from '../../../shared/exportVerses'
 import { EMPTY_SELECTION, clickSelection, contextSelection, joinSelected, type ListSelection } from '../../../shared/listSelection'
 import { parseReferences } from '../../../shared/parser'
 import { buildPrintHtml } from '../../../shared/printHtml'
 import { DEFAULT_SEARCH_PREFS, hitReference, parseSearchPrefix, type SearchPrefs, type SearchQuery } from '../../../shared/search'
 import { toReferenceText, type Passage } from '../../../shared/pickerSelection'
+import { lookupTarget, type VersePoint } from '../../../shared/strongs'
 import { stepScale, type Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, RefError, RefGroup, VerseRange } from '../../../shared/types'
 import { BrowsePanel } from './BrowsePanel'
@@ -21,6 +23,8 @@ import type { ClickMods } from './SelectableList'
 import { SearchPanel } from './SearchPanel'
 import { SelectedList } from './SelectedList'
 import { SidePanel } from './SidePanel'
+import { StrongsPanel } from './StrongsPanel'
+import { followLink, goBack, INITIAL_STRONGS, showLookup, type StrongsState, type StrongsView } from './strongsState'
 import { StylePanel } from './StylePanel'
 import { useBibleIndex } from './useBibleIndex'
 import { useSearch } from './useSearch'
@@ -56,6 +60,10 @@ export function ControlScreen() {
   const [browseCollapsed, setBrowseCollapsed] = useState(false)
   // Bumped whenever verses are shown some way other than the picker, so the picker jumps to them.
   const [browseJump, setBrowseJump] = useState(0)
+  const [strongsAvailable, setStrongsAvailable] = useState(false)
+  const [strongs, setStrongs] = useState<StrongsState>(INITIAL_STRONGS)
+  const [strongsCollapsed, setStrongsCollapsed] = useState(false)
+  const [strongsMark, setStrongsMark] = useState<VerseRange | null>(null)
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
@@ -82,9 +90,14 @@ export function ControlScreen() {
     void a.getDisplayInfo().then(setInfo)
     void a.getPanelCollapsed('settings').then(setPanelCollapsed)
     void a.getPanelCollapsed('browse').then(setBrowseCollapsed)
+    void a.hasStrongs().then(setStrongsAvailable)
+    void a.getPanelCollapsed('strongs').then(setStrongsCollapsed)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
+
+  // New verses on screen: the looked-up word is no longer shown.
+  useEffect(() => setStrongsMark(null), [groups])
 
   // New results invalidate the old selection.
   useEffect(() => setSearchSel(EMPTY_SELECTION), [search.hits])
@@ -250,6 +263,41 @@ export function ControlScreen() {
     const next = !browseCollapsed
     setBrowseCollapsed(next)
     void api().setPanelCollapsed('browse', next)
+  }
+
+  const setStrongsPanel = (collapsed: boolean) => {
+    setStrongsCollapsed(collapsed)
+    void api().setPanelCollapsed('strongs', collapsed)
+  }
+
+  const entryView = async (id: string, context: string | null): Promise<StrongsView> => {
+    const entry = await api().getStrongsEntry(id)
+    return entry ? { kind: 'entry', entry, context } : { kind: 'missing', id }
+  }
+
+  // A click on a word in the live preview.
+  const lookupWord = async (p: VersePoint) => {
+    const verses = groups.flatMap(g => g.verses)
+    const target = lookupTarget(verses, p)
+    if (!target) return
+    if (strongsCollapsed) setStrongsPanel(false)
+    if (!strongsAvailable) {
+      setStrongs(showLookup({ kind: 'unavailable' }))
+      return
+    }
+    if (target.kind === 'untagged') {
+      setStrongsMark(null)
+      setStrongs(showLookup({ kind: 'untagged', word: target.word }))
+      return
+    }
+    const where = `${bookById(p.bookId).name} ${p.chapter}:${p.verse}`
+    setStrongs(showLookup(await entryView(target.span.id, `"${target.word}" in ${where}`)))
+    setStrongsMark({ bookId: p.bookId, chapter: p.chapter, verse: p.verse, start: target.span.start, end: target.span.end })
+  }
+
+  const followStrongsLink = async (id: string) => {
+    const next = await entryView(id, null)
+    setStrongs(s => followLink(s, next))
   }
 
   // The picker produced a new selection: write it to the verse box and show it (not added to Recent).
@@ -452,8 +500,18 @@ export function ControlScreen() {
               onPrint={() => void print()}
               onAddRecent={() => void addShownToRecent()}
               onClear={clear}
+              strongsEnabled={strongsAvailable}
+              strongsMark={strongsMark}
+              onLookup={p => void lookupWord(p)}
             />
           )}
+          <StrongsPanel
+            state={strongs}
+            collapsed={strongsCollapsed}
+            onToggle={() => setStrongsPanel(!strongsCollapsed)}
+            onLink={id => void followStrongsLink(id)}
+            onBack={() => setStrongs(goBack)}
+          />
         </main>
 
         <SidePanel side="right" label="settings" className="panel--right" collapsed={panelCollapsed} onToggle={togglePanel}>

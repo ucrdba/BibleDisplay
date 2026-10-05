@@ -60,4 +60,10 @@ describe('HelpPanel', () => {
       expect(out).toContain(text)
     }
   })
+
+  it("explains Strong's lookups", () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    expect(out).toContain('Strong&#x27;s')
+    expect(out).toContain('Click a word in the live preview')
+  })
 })

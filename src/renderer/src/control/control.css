@@ -685,3 +685,79 @@ input[type='color'] {
   border-color: var(--error);
   color: #fff;
 }
+
+.strongs-panel {
+  flex: none;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  min-height: 0;
+}
+
+.strongs-panel--collapsed {
+  height: auto;
+}
+
+.strongs-panel__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.strongs-panel__toggle {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.strongs-panel__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strongs-panel__back {
+  padding: 1px 8px;
+}
+
+.strongs-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.strongs-entry__lemma {
+  font-size: 22px;
+}
+
+.strongs-entry__xlit {
+  font-style: italic;
+}
+
+.strongs-entry__label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.strongs-entry__field {
+  margin: 4px 0;
+}
+
+.strongs-ref {
+  padding: 0 2px;
+}
+
+::highlight(strongs-hover) {
+  text-decoration: underline dotted;
+}
+
+::highlight(strongs-current) {
+  background-color: rgba(255, 214, 0, 0.35);
+}
