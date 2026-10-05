@@ -221,7 +221,7 @@ export function markedPieces(text: string, marks: Span[], max = 160): Piece[] {
     to = from + max
   }
   const pieces: Piece[] = []
-  if (from > 0) pieces.push({ text: '…', bold: false })
+  if (from > 0) pieces.push({ text: '\u2026', bold: false })
   let pos = from
   for (const m of marks) {
     const start = Math.max(m.start, pos)
@@ -232,6 +232,6 @@ export function markedPieces(text: string, marks: Span[], max = 160): Piece[] {
     pos = end
   }
   if (pos < to) pieces.push({ text: text.slice(pos, to), bold: false })
-  if (to < text.length) pieces.push({ text: '…', bold: false })
+  if (to < text.length) pieces.push({ text: '\u2026', bold: false })
   return pieces
 }

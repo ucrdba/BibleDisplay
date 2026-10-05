@@ -42,7 +42,7 @@ describe('parseSearchPrefix', () => {
   })
 
   it('turns /pattern/ into a Regex search', () => {
-    expect(parseSearchPrefix('/still\s+wat/')).toEqual({ text: 'still\s+wat', mode: 'regex' })
+    expect(parseSearchPrefix('/still\\s+wat/')).toEqual({ text: 'still\\s+wat', mode: 'regex' })
   })
 
   it('leaves references alone', () => {
@@ -95,11 +95,11 @@ describe('markedPieces', () => {
   it('trims long text around the first mark', () => {
     const text = 'a'.repeat(100) + 'X' + 'b'.repeat(100)
     expect(markedPieces(text, [{ start: 100, end: 101 }], 60)).toEqual([
-      { text: '…', bold: false },
+      { text: '\u2026', bold: false },
       { text: 'a'.repeat(40), bold: false },
       { text: 'X', bold: true },
       { text: 'b'.repeat(19), bold: false },
-      { text: '…', bold: false },
+      { text: '\u2026', bold: false },
     ])
   })
 
