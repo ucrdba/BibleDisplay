@@ -209,7 +209,6 @@ export function ControlScreen() {
       .join(', ')
     if (!text) return
     resetListSel()
-    setSearchSel(EMPTY_SELECTION)
     setInput(text)
     setErrors([])
     void show(text, false)
