@@ -108,6 +108,8 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.listFonts, () => listFonts())
   ipcMain.handle(IPC.getDisplayInfo, () => ctx.displayInfo())
   ipcMain.handle(IPC.setDisplayMonitor, (_e, id: number | null) => ctx.setMonitor(id))
+  ipcMain.handle(IPC.getPanelCollapsed, () => ctx.user.getPanelCollapsed())
+  ipcMain.handle(IPC.setPanelCollapsed, (_e, collapsed: boolean) => ctx.user.setPanelCollapsed(collapsed === true))
   ipcMain.handle(IPC.displayReady, () => ({ state, styles: ctx.user.getStyles() }))
 
   ipcMain.on(IPC.present, (_e, next: DisplayState) => {

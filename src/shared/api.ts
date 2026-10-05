@@ -33,6 +33,8 @@ export interface ControlApi {
   listFonts(): Promise<string[]>
   getDisplayInfo(): Promise<DisplayInfo>
   setDisplayMonitor(id: number | null): Promise<void>
+  getPanelCollapsed(): Promise<boolean>
+  setPanelCollapsed(collapsed: boolean): Promise<void>
   present(state: DisplayState): void
   scroll(cmd: ScrollCommand): void
   onDisplayInfo(cb: (info: DisplayInfo) => void): Unsubscribe

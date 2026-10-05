@@ -15,6 +15,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Imported and Recent lists: click a line to show it; **Ctrl+click** adds or removes lines, **Shift+click** selects a range — all selected lines show together. Right-click (or press **Delete**) to delete the selected lines from the list.
 - Right-click the live preview to **Save verse list…** (re-importable), **Save verse text…** (full text), or **Print…**.
 - **Display on** (right panel): pick which monitor shows the verses; your choice is remembered.
+- **»** at the top of the right panel hides it to give the preview more room; **«** brings it back. Shortcuts and the highlight toolbar still work while it is hidden.
 - **F1** or **? Help**: shows how to use everything.
 
 ## License

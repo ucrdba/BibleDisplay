@@ -15,6 +15,7 @@ import { RecentList } from './RecentList'
 import { ReferenceInput } from './ReferenceInput'
 import type { ClickMods } from './SelectableList'
 import { SelectedList } from './SelectedList'
+import { SidePanel } from './SidePanel'
 import { StylePanel } from './StylePanel'
 import { useBibleIndex } from './useBibleIndex'
 
@@ -45,6 +46,7 @@ export function ControlScreen() {
     activeMonitorId: null,
   })
   const [helpOpen, setHelpOpen] = useState(false)
+  const [panelCollapsed, setPanelCollapsed] = useState(false)
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
@@ -61,6 +63,7 @@ export function ControlScreen() {
     void a.listImported().then(setImported)
     void a.listFonts().then(setFonts)
     void a.getDisplayInfo().then(setInfo)
+    void a.getPanelCollapsed().then(setPanelCollapsed)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
@@ -153,6 +156,12 @@ export function ControlScreen() {
     if (result.kind === 'error') notify(`Could not print: ${result.message}`)
   }
 
+  const togglePanel = () => {
+    const next = !panelCollapsed
+    setPanelCollapsed(next)
+    void api().setPanelCollapsed(next)
+  }
+
   const clearImported = async () => {
     await api().clearImported()
     setImported([])
@@ -238,7 +247,7 @@ export function ControlScreen() {
           ? Help
         </button>
       </div>
-      <div className="control__panels">
+      <div className={`control__panels${panelCollapsed ? ' control__panels--collapsed' : ''}`}>
         <aside className="panel panel--left">
           <h3 className="panel__title">Enter verses</h3>
           <ReferenceInput
@@ -304,7 +313,7 @@ export function ControlScreen() {
           )}
         </main>
 
-        <aside className="panel panel--right">
+        <SidePanel collapsed={panelCollapsed} onToggle={togglePanel}>
           <MonitorSelect monitors={info.monitors} chosenId={info.chosenMonitorId} onChange={id => void api().setDisplayMonitor(id)} />
           {styles && (
             <StylePanel
@@ -318,7 +327,7 @@ export function ControlScreen() {
               onRemoveHighlight={() => void removeHighlight()}
             />
           )}
-        </aside>
+        </SidePanel>
       </div>
       {helpOpen && <HelpPanel version={__APP_VERSION__} onClose={() => setHelpOpen(false)} />}
     </div>

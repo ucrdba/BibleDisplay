@@ -38,6 +38,27 @@
   overflow-y: auto;
 }
 
+.control__panels--collapsed {
+  grid-template-columns: 300px 1fr 28px;
+}
+
+.panel--right {
+  position: relative;
+}
+
+.panel__toggle {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  padding: 0 6px;
+  line-height: 18px;
+}
+
+.panel--collapsed {
+  padding: 0;
+  overflow: hidden;
+}
+
 .panel--middle {
   display: flex;
   flex-direction: column;
