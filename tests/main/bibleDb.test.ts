@@ -48,3 +48,12 @@ describe('BibleDb queries', () => {
     expect(v17.redLetter).toEqual([])
   })
 })
+
+describe('BibleDb.allVerses', () => {
+  it('returns every verse in Bible order as [book, chapter, verse, text]', () => {
+    db = BibleDb.open(makeFixtureBible())
+    const rows = db.allVerses()
+    expect(rows.map(([b, c, v]) => `${b}.${c}.${v}`)).toEqual(['41.3.3', '43.3.16', '43.3.17', '43.3.18', '43.4.1'])
+    expect(rows[1]).toEqual([43, 3, 16, JOHN_3_16])
+  })
+})

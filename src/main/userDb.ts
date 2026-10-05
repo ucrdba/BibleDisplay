@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { existsSync, renameSync, rmSync } from 'node:fs'
 import { removeIndices } from '../shared/listSelection'
+import { DEFAULT_SEARCH_PREFS, normalizeSearchPrefs, type SearchPrefs } from '../shared/search'
 import { normalizeStyles, type Styles } from '../shared/styles'
 import type { Highlight, VerseRange, VerseSpan } from '../shared/types'
 
@@ -188,6 +189,22 @@ export class UserDb {
     this.db
       .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
       .run('rightPanelCollapsed', JSON.stringify(collapsed))
+  }
+
+  getSearchPrefs(): SearchPrefs {
+    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('search') as { value: string } | undefined
+    if (!row) return { ...DEFAULT_SEARCH_PREFS }
+    try {
+      return normalizeSearchPrefs(JSON.parse(row.value))
+    } catch {
+      return { ...DEFAULT_SEARCH_PREFS }
+    }
+  }
+
+  setSearchPrefs(prefs: SearchPrefs): void {
+    this.db
+      .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
+      .run('search', JSON.stringify(normalizeSearchPrefs(prefs)))
   }
 
   close(): void {

@@ -11,6 +11,9 @@ function subscribe<T>(channel: string, cb: (value: T) => void): Unsubscribe {
 const api: BibleApi = {
   control: {
     verseCounts: () => ipcRenderer.invoke(IPC.verseCounts),
+    allVerses: () => ipcRenderer.invoke(IPC.allVerses),
+    getSearchPrefs: () => ipcRenderer.invoke(IPC.getSearchPrefs),
+    setSearchPrefs: prefs => ipcRenderer.invoke(IPC.setSearchPrefs, prefs),
     loadGroups: groups => ipcRenderer.invoke(IPC.loadGroups, groups),
     getStyles: () => ipcRenderer.invoke(IPC.getStyles),
     setStyles: styles => ipcRenderer.invoke(IPC.setStyles, styles),

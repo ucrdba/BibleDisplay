@@ -1,3 +1,4 @@
+import Database from 'better-sqlite3'
 import { existsSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -122,5 +123,27 @@ describe('UserDb right panel', () => {
     expect(again.getPanelCollapsed()).toBe(true)
     again.setPanelCollapsed(false)
     expect(again.getPanelCollapsed()).toBe(false)
+  })
+})
+
+describe('UserDb search prefs', () => {
+  it('starts with All words / Whole Bible and remembers changes across reopening', () => {
+    const path = newPath()
+    const db = open(path)
+    expect(db.getSearchPrefs()).toEqual({ mode: 'all', scope: 'bible' })
+    db.setSearchPrefs({ mode: 'regex', scope: 'book:43' })
+    db.close()
+    opened.pop()
+    expect(open(path).getSearchPrefs()).toEqual({ mode: 'regex', scope: 'book:43' })
+  })
+
+  it('falls back to defaults when the stored value is damaged', () => {
+    const path = newPath()
+    open(path).close()
+    opened.pop()
+    const raw = new Database(path)
+    raw.prepare("INSERT INTO settings (key, value) VALUES ('search', 'not json')").run()
+    raw.close()
+    expect(open(path).getSearchPrefs()).toEqual({ mode: 'all', scope: 'bible' })
   })
 })

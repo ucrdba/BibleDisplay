@@ -3,6 +3,7 @@ import { basename } from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
 import { IPC } from '../shared/ipc'
 import { decodeTextFile, IMPORT_MAX_BYTES, parseImportText } from '../shared/importList'
+import type { SearchPrefs } from '../shared/search'
 import type { Styles } from '../shared/styles'
 import type {
   DisplayInfo,
@@ -33,6 +34,9 @@ export function registerIpc(ctx: MainContext): void {
   const toDisplay = (channel: string, payload: unknown) => ctx.getDisplay()?.webContents.send(channel, payload)
 
   ipcMain.handle(IPC.verseCounts, () => ctx.bible.verseCounts())
+  ipcMain.handle(IPC.allVerses, () => ctx.bible.allVerses())
+  ipcMain.handle(IPC.getSearchPrefs, () => ctx.user.getSearchPrefs())
+  ipcMain.handle(IPC.setSearchPrefs, (_e, prefs: SearchPrefs) => ctx.user.setSearchPrefs(prefs))
   ipcMain.handle(IPC.loadGroups, (_e, groups: RefGroup[]) => loadGroups(ctx.bible, ctx.user, groups))
   ipcMain.handle(IPC.getStyles, () => ctx.user.getStyles())
   ipcMain.handle(IPC.setStyles, (_e, styles: Styles) => {

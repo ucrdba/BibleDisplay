@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { existsSync } from 'node:fs'
+import type { VerseRow } from '../shared/search'
 import type { BibleVerse, Span, VerseCounts, VerseSpan } from '../shared/types'
 
 export class BibleDbError extends Error {
@@ -35,6 +36,13 @@ export class BibleDb {
     const out: VerseCounts = {}
     for (const r of rows) (out[r.b] ??= [])[r.c - 1] = r.n
     return out
+  }
+
+  allVerses(): VerseRow[] {
+    return this.db
+      .prepare('SELECT book_id, chapter, verse, text FROM verses ORDER BY book_id, chapter, verse')
+      .raw()
+      .all() as VerseRow[]
   }
 
   getVerses(span: VerseSpan): BibleVerse[] {

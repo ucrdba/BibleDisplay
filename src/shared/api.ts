@@ -1,3 +1,4 @@
+import type { SearchPrefs, VerseRow } from './search'
 import type { Styles } from './styles'
 import type {
   DisplayGroup,
@@ -16,6 +17,9 @@ export type Unsubscribe = () => void
 
 export interface ControlApi {
   verseCounts(): Promise<VerseCounts>
+  allVerses(): Promise<VerseRow[]>
+  getSearchPrefs(): Promise<SearchPrefs>
+  setSearchPrefs(prefs: SearchPrefs): Promise<void>
   loadGroups(groups: RefGroup[]): Promise<DisplayGroup[]>
   getStyles(): Promise<Styles>
   setStyles(styles: Styles): Promise<void>
