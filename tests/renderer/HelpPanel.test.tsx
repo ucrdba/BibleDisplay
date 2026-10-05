@@ -61,6 +61,10 @@ describe('HelpPanel', () => {
     }
   })
 
+  it("explains showing Strong's on the display", () => {
+    expect(renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)).toContain('Show on display')
+  })
+
   it("explains Strong's lookups", () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Strong&#x27;s')

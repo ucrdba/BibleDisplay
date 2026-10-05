@@ -15,8 +15,10 @@ import type { StrongsEntry } from '../../src/shared/types'
 const entry = (id: string): StrongsEntry => ({ id, lemma: 'x', xlit: `x${id}`, pron: '', derivation: '', definition: `meaning ${id.slice(1)}`, kjvDef: '' })
 const view = (id: string, context: string | null = null): StrongsView => ({ kind: 'entry', entry: entry(id), context })
 const noop = () => {}
-const render = (state: StrongsState, collapsed = false) =>
-  renderToStaticMarkup(<StrongsPanel state={state} collapsed={collapsed} onToggle={noop} onLink={noop} onBack={noop} />)
+const render = (state: StrongsState, collapsed = false, onDisplay = false) =>
+  renderToStaticMarkup(
+    <StrongsPanel state={state} collapsed={collapsed} onToggle={noop} onLink={noop} onBack={noop} onDisplay={onDisplay} onToggleDisplay={noop} />,
+  )
 
 describe('strongsState', () => {
   it('starts empty', () => {
@@ -76,6 +78,12 @@ describe('StrongsPanel', () => {
     expect(out).toContain('strongs-panel--collapsed')
     expect(out).not.toContain('meaning 430')
     expect(out).toContain('aria-expanded="false"')
+  })
+
+  it('offers Show on display, checked or not, even when collapsed', () => {
+    expect(render(INITIAL_STRONGS)).toMatch(/<input type="checkbox"[^>]*\/?>\s*Show on display/)
+    expect(render(INITIAL_STRONGS, false, true)).toMatch(/<input type="checkbox" checked=""[^>]*\/?>\s*Show on display/)
+    expect(render(INITIAL_STRONGS, true, true)).toContain('Show on display')
   })
 })
 

@@ -174,7 +174,8 @@ export function HelpPanel({ version, onClose }: Props) {
           Click a word in the live preview to see its Strong&apos;s Hebrew or Greek entry in the panel under the preview
           (the original word, pronunciation, derivation, definition, and KJV renderings). Click a number such as H430 in an
           entry to open it; Back returns. Dragging across words still selects them for highlighting. The arrow on the
-          panel&apos;s bar hides or shows it. Nothing appears on the display.
+          panel&apos;s bar hides or shows it. To show the entry on the display too, tick <strong>Show on display</strong> on the panel&apos;s bar: it appears
+          in a band under the verses, with the word tinted. Untick it to remove the band.
         </p>
 
         <h3>Saving and printing</h3>

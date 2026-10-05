@@ -24,7 +24,7 @@ import { SearchPanel } from './SearchPanel'
 import { SelectedList } from './SelectedList'
 import { SidePanel } from './SidePanel'
 import { StrongsPanel } from './StrongsPanel'
-import { followLink, goBack, INITIAL_STRONGS, showLookup, type StrongsState, type StrongsView } from './strongsState'
+import { displayStrongs, followLink, goBack, INITIAL_STRONGS, showLookup, type StrongsState, type StrongsView } from './strongsState'
 import { StylePanel } from './StylePanel'
 import { useBibleIndex } from './useBibleIndex'
 import { useSearch } from './useSearch'
@@ -64,6 +64,8 @@ export function ControlScreen() {
   const [strongs, setStrongs] = useState<StrongsState>(INITIAL_STRONGS)
   const [strongsCollapsed, setStrongsCollapsed] = useState(false)
   const [strongsMark, setStrongsMark] = useState<VerseRange | null>(null)
+  const [strongsOnDisplay, setStrongsOnDisplay] = useState(false)
+  const shownStrongs = useMemo(() => displayStrongs(strongs, strongsOnDisplay, strongsMark), [strongs, strongsOnDisplay, strongsMark])
   const [scrollTop, setScrollTop] = useState(0)
   const [selection, setSelection] = useState<VerseRange[]>([])
   const [saveNotice, setSaveNotice] = useState<string | null>(null)
@@ -92,9 +94,15 @@ export function ControlScreen() {
     void a.getPanelCollapsed('browse').then(setBrowseCollapsed)
     void a.hasStrongs().then(setStrongsAvailable)
     void a.getPanelCollapsed('strongs').then(setStrongsCollapsed)
+    void a.getStrongsOnDisplay().then(setStrongsOnDisplay)
     const offs = [a.onDisplayInfo(setInfo), a.onScrollPos(setScrollTop)]
     return () => offs.forEach(off => off())
   }, [])
+
+  // The one place the display is told what to show: verses, blank, and the Strong's band.
+  useEffect(() => {
+    api().present({ groups, blank, strongs: shownStrongs })
+  }, [groups, blank, shownStrongs])
 
   // New verses on screen: the looked-up word is no longer shown.
   useEffect(() => setStrongsMark(null), [groups])
@@ -107,12 +115,11 @@ export function ControlScreen() {
     if (listTab === 'search' && search.status === 'unavailable') search.retry()
   }, [listTab])
 
-  const present = useCallback(async (next: RefGroup[], nextBlank: boolean) => {
+  const present = useCallback(async (next: RefGroup[]) => {
     const loaded = await api().loadGroups(next)
     setRefGroups(next)
     setGroups(loaded)
     setSelection([])
-    api().present({ groups: loaded, blank: nextBlank, strongs: null })
   }, [])
 
   const show = async (text: string, recordRecent = true, fromPicker = false) => {
@@ -120,7 +127,7 @@ export function ControlScreen() {
     const result = parseReferences(text, index)
     setErrors(result.errors)
     if (result.groups.length === 0) return
-    await present(result.groups, blank)
+    await present(result.groups)
     if (!fromPicker) setBrowseJump(n => n + 1)
     if (!recordRecent) return
     resetListSel()
@@ -132,7 +139,7 @@ export function ControlScreen() {
     setInput('')
     setErrors([])
     resetListSel()
-    void present([], blank).then(() => setBrowseJump(n => n + 1))
+    void present([]).then(() => setBrowseJump(n => n + 1))
   }
 
   // Saves what is on screen (not the verse box text) as a Recent entry.
@@ -143,13 +150,12 @@ export function ControlScreen() {
   }
 
   const removeGroup = (i: number) => {
-    void present(refGroups.filter((_, j) => j !== i), blank).then(() => setBrowseJump(n => n + 1))
+    void present(refGroups.filter((_, j) => j !== i)).then(() => setBrowseJump(n => n + 1))
   }
 
   const toggleBlank = () => {
     const next = !blank
     setBlank(next)
-    api().present({ groups, blank: next, strongs: null })
   }
 
   const updateStyles = (next: Styles) => {
@@ -161,14 +167,14 @@ export function ControlScreen() {
     if (selection.length === 0) return
     await api().addHighlights(selection, color)
     window.getSelection()?.removeAllRanges()
-    await present(refGroups, blank)
+    await present(refGroups)
   }
 
   const removeHighlight = async () => {
     if (selection.length === 0) return
     await api().removeHighlights(selection)
     window.getSelection()?.removeAllRanges()
-    await present(refGroups, blank)
+    await present(refGroups)
   }
 
   const updateSearchPrefs = (patch: Partial<SearchPrefs>) => {
@@ -293,6 +299,11 @@ export function ControlScreen() {
     const where = `${bookById(p.bookId).name} ${p.chapter}:${p.verse}`
     setStrongs(showLookup(await entryView(target.span.id, `"${target.word}" in ${where}`)))
     setStrongsMark({ bookId: p.bookId, chapter: p.chapter, verse: p.verse, start: target.span.start, end: target.span.end })
+  }
+
+  const toggleStrongsOnDisplay = (on: boolean) => {
+    setStrongsOnDisplay(on)
+    void api().setStrongsOnDisplay(on)
   }
 
   const followStrongsLink = async (id: string) => {
@@ -485,6 +496,7 @@ export function ControlScreen() {
           {styles && (
             <PreviewPanel
               groups={groups}
+              strongs={shownStrongs}
               styles={styles}
               blank={blank}
               info={info}
@@ -511,6 +523,8 @@ export function ControlScreen() {
             onToggle={() => setStrongsPanel(!strongsCollapsed)}
             onLink={id => void followStrongsLink(id)}
             onBack={() => setStrongs(goBack)}
+            onDisplay={strongsOnDisplay}
+            onToggleDisplay={toggleStrongsOnDisplay}
           />
         </main>
 

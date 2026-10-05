@@ -7,6 +7,8 @@ interface Props {
   onToggle(): void
   onLink(id: string): void
   onBack(): void
+  onDisplay: boolean
+  onToggleDisplay(on: boolean): void
 }
 
 const DOT = '\u00b7'
@@ -29,7 +31,7 @@ function body(state: StrongsState, onLink: (id: string) => void) {
   }
 }
 
-export function StrongsPanel({ state, collapsed, onToggle, onLink, onBack }: Props) {
+export function StrongsPanel({ state, collapsed, onToggle, onLink, onBack, onDisplay, onToggleDisplay }: Props) {
   const v = state.view
   return (
     <section className={`strongs-panel${collapsed ? ' strongs-panel--collapsed' : ''}`}>
@@ -49,6 +51,9 @@ export function StrongsPanel({ state, collapsed, onToggle, onLink, onBack }: Pro
             {v.context && ` ${DOT} ${v.context}`}
           </span>
         )}
+        <label className="strongs-panel__display" title="Also show the entry on the display, under the verses">
+          <input type="checkbox" checked={onDisplay} onChange={e => onToggleDisplay(e.target.checked)} /> Show on display
+        </label>
         {!collapsed && state.back.length > 0 && (
           <button type="button" className="btn strongs-panel__back" onClick={onBack}>
             Back
