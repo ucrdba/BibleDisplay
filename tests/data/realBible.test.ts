@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { verseChecksum } from '../../data/lib/strongs/buildStrongs'
 import { BibleDb } from '../../src/main/bibleDb'
 import { searchVerses, type SearchQuery, type VerseRow } from '../../src/shared/search'
 
@@ -65,5 +66,53 @@ describe.skipIf(!existsSync(PATH))('searching the real KJV', () => {
     expect(performance.now() - t).toBeLessThan(500)
     expect(r.kind === 'ok' && r.total).toBeGreaterThan(500)
     expect(r.kind === 'ok' && r.hits.length).toBe(500)
+  })
+})
+
+const hasStrongsTables = (() => {
+  if (!existsSync(PATH)) return false
+  const db = new Database(PATH, { readonly: true })
+  try {
+    return (db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type = 'table' AND name = 'word_strongs'").get() as { n: number }).n === 1
+  } finally {
+    db.close()
+  }
+})()
+
+describe.skipIf(!hasStrongsTables)("resources/bible.db Strong's data", () => {
+  let db: Database.Database
+  beforeAll(() => {
+    db = new Database(PATH, { readonly: true })
+  })
+  afterAll(() => db.close())
+
+  const tagOf = (b: number, c: number, v: number, word: string) => {
+    const text = (db.prepare('SELECT text FROM verses WHERE book_id = ? AND chapter = ? AND verse = ?').get(b, c, v) as { text: string }).text
+    const spans = db
+      .prepare('SELECT start_pos AS s, end_pos AS e, strongs FROM word_strongs WHERE book_id = ? AND chapter = ? AND verse = ?')
+      .all(b, c, v) as { s: number; e: number; strongs: string }[]
+    return spans.find(x => text.slice(x.s, x.e) === word)?.strongs
+  }
+
+  it('tags known words', () => {
+    expect(tagOf(1, 1, 1, 'God')).toBe('H430')
+    expect(tagOf(43, 3, 16, 'loved')).toBe('G25')
+  })
+
+  it('places at least 99.9% of the 361,172 tagged words', () => {
+    expect((db.prepare('SELECT count(*) AS n FROM word_strongs').get() as { n: number }).n).toBeGreaterThan(360_800)
+  })
+
+  it('has a dictionary entry for every tag', () => {
+    const missing = db
+      .prepare('SELECT count(*) AS n FROM word_strongs w LEFT JOIN strongs_entries e ON e.id = w.strongs WHERE e.id IS NULL')
+      .get() as { n: number }
+    expect(missing.n).toBe(0)
+    expect((db.prepare("SELECT count(*) AS n FROM strongs_entries WHERE id LIKE 'H%'").get() as { n: number }).n).toBe(8674)
+    expect((db.prepare("SELECT count(*) AS n FROM strongs_entries WHERE id LIKE 'G%'").get() as { n: number }).n).toBe(5624)
+  })
+
+  it('left the verse text exactly as it was', () => {
+    expect(verseChecksum(db)).toEqual({ count: 31102, sha256: 'b089fd537dd81d5ec186689dec27aa0b083e07421e3a5160f0975dc8e903970d' })
   })
 })

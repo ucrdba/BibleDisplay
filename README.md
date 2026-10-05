@@ -40,3 +40,13 @@ npm run dist         # bump the patch version, then build the Windows installer 
 `resources/bible.db` is generated from the public-domain KJV OSIS file at
 https://github.com/seven1m/open-bibles (`eng-kjv.osis.xml`). To regenerate it, save that file as
 `data/source/eng-kjv.osis.xml` and run `npm run import-kjv`.
+
+### Adding Strong's numbers and dictionaries
+
+`resources/bible.db` also holds Strong's numbers for each KJV word and the Strong's Hebrew and Greek dictionaries (all public domain). To rebuild them, put these in `data/source/` and run `npm run import-strongs` (it never changes the verse text):
+
+- `eng-kjv2006_usfm/` — unzip https://ebible.org/Scriptures/eng-kjv2006_usfm.zip
+- `StrongHebrewG.xml` — https://raw.githubusercontent.com/openscriptures/strongs/master/hebrew/StrongHebrewG.xml
+- `strongsgreek.xml` — from https://raw.githubusercontent.com/openscriptures/strongs/master/greek/StrongsGreekDictionaryXML_1.4.zip
+
+Use these XML files, not Open Scriptures' JSON versions (those carry a CC-BY-SA license).
