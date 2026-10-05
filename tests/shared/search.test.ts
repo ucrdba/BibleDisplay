@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import {
   mergeSpans,
   parseTerms,
@@ -14,7 +14,7 @@ import {
 const ROWS: VerseRow[] = [
   [19, 23, 1, "The LORD is my shepherd; I shall not want."],
   [19, 23, 2, "He maketh me to lie down in green pastures: he leadeth me beside the still waters."],
-  [19, 23, 3, "He restoreth my soul: he leadeth me in the paths of righteousness for his name" + "'" + "s sake."],
+  [19, 23, 3, "He restoreth my soul: he leadeth me in the paths of righteousness for his name\u2019s sake."],
   [19, 119, 90, "Thy faithfulness is unto all generations: thou hast established the earth, and it abideth."],
   [43, 3, 16, "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life."],
   [58, 11, 1, "Now faith is the substance of things hoped for, the evidence of things not seen."],
@@ -39,7 +39,7 @@ describe('parseTerms', () => {
 
   it('strips punctuation, keeps apostrophes and *, and drops empty terms', () => {
     expect(parseTerms('shepherd; (lord)')).toEqual([{ words: ['shepherd'] }, { words: ['lord'] }])
-    expect(parseTerms("name" + "'" + "s faith*")).toEqual([{ words: ["name" + "'" + "s"] }, { words: ['faith*'] }])
+    expect(parseTerms('name\u2019s faith*')).toEqual([{ words: ["name's"] }, { words: ['faith*'] }])
     expect(parseTerms('; * --')).toEqual([])
   })
 })
@@ -66,7 +66,8 @@ describe('searchVerses — All words', () => {
   })
 
   it('treats straight and curly apostrophes alike, and ignores typed punctuation', () => {
-    expect(refs(run("name" + "'" + "s"))).toEqual(['19.23.3'])
+    expect(refs(run("name's"))).toEqual(['19.23.3'])
+    expect(refs(run('name\u2019s'))).toEqual(['19.23.3'])
     expect(refs(run('shepherd;'))).toEqual(['19.23.1'])
   })
 })
@@ -99,8 +100,8 @@ describe('searchVerses — Regex', () => {
   })
 
   it('normalizes apostrophes in the pattern and text', () => {
-    expect(refs(run("name" + "'" + "s", 'regex'))).toEqual(['19.23.3'])
-    expect(refs(run("name" + "'" + "s", 'regex'))).toEqual(['19.23.3'])
+    expect(refs(run("name's", 'regex'))).toEqual(['19.23.3'])
+    expect(refs(run('name\u2019s', 'regex'))).toEqual(['19.23.3'])
   })
 
   it('reports an invalid pattern', () => {
@@ -130,7 +131,7 @@ describe('searchVerses — results', () => {
   })
 
   it('keeps the original (curly) text in hits', () => {
-    const r = run("name" + "'" + "s")
+    const r = run('name\u2019s')
     expect(r.kind === 'ok' && r.hits[0].text).toBe(ROWS[2][3])
   })
 

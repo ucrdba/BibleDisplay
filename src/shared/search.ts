@@ -1,4 +1,4 @@
-import type { Span } from './types'
+﻿import type { Span } from './types'
 
 export type SearchMode = 'all' | 'phrase' | 'any' | 'regex'
 export type SearchScope = 'bible' | 'ot' | 'nt' | 'gospels' | `book:${number}`
@@ -36,7 +36,7 @@ export interface Term {
 export const SEARCH_LIMIT = 500
 
 /** Curly single quotes become straight ones. One UTF-16 unit for one, so offsets are unchanged. */
-export const normalizeApostrophes = (s: string) => s.replace(/['']/g, "'")
+export const normalizeApostrophes = (s: string) => s.replace(/[\u2018\u2019]/g, "'")
 
 function cleanWord(word: string): string {
   const cleaned = normalizeApostrophes(word).replace(/[^\p{L}\p{N}'*]/gu, '')
