@@ -165,3 +165,62 @@ describe('parseReferences', () => {
     expect(messages('1 Jn.')).toEqual(['Missing chapter after "1 John"'])
   })
 })
+
+describe('verse lists with periods', () => {
+  it('lists single verses', () => {
+    expect(labels('ps 23.1.3.4')).toEqual(['Psalms 23:1', 'Psalms 23:3', 'Psalms 23:4'])
+    expect(labels('ps 23:1.3.4')).toEqual(['Psalms 23:1', 'Psalms 23:3', 'Psalms 23:4'])
+  })
+
+  it('uses .. between two numbers as a range', () => {
+    expect(labels('ps 23.1..3.5')).toEqual(['Psalms 23:1-3', 'Psalms 23:5'])
+    expect(labels('ps 23:1..3')).toEqual(['Psalms 23:1-3'])
+    expect(labels('lk 1.1..5.7..')).toEqual(['Luke 1:1-5', 'Luke 1:7-80'])
+  })
+
+  it('lets a trailing .. run the last verse to the end of the chapter', () => {
+    expect(labels('ps 23.1.3.4..')).toEqual(['Psalms 23:1', 'Psalms 23:3', 'Psalms 23:4-6'])
+  })
+
+  it('mixes with commas and carries the chapter to a bare verse', () => {
+    expect(labels('ps 23.1.3, 5-6')).toEqual(['Psalms 23:1', 'Psalms 23:3', 'Psalms 23:5-6'])
+    expect(labels('jn 3:16, ps 23.1.2')).toEqual(['John 3:16', 'Psalms 23:1', 'Psalms 23:2'])
+  })
+
+  it('works for a one-chapter book when the chapter is given', () => {
+    expect(labels('jude 1.5.7')).toEqual(['Jude 1:5', 'Jude 1:7'])
+  })
+
+  it('gives every verse the item position for error marks, and is not a whole chapter', () => {
+    const groups = parse('jn 3:16, ps 23.1.3').groups
+    expect(groups.slice(1).map(g => [g.inputStart, g.inputEnd, g.whole])).toEqual([
+      [9, 18, false],
+      [9, 18, false],
+    ])
+  })
+
+  it('reports problems in a verse list and shows none of it', () => {
+    expect(messages('ps 23.1.9')).toEqual(['Psalms 23 has only 6 verses'])
+    expect(labels('ps 23.1.9')).toEqual([])
+    expect(messages('ps 23.1.3-5')).toEqual(['Use .. for a range in a verse list, e.g. ps 23.1.3..5'])
+    expect(messages('ps 23.1..5..')).toEqual(["'..' at the end goes after a single verse"])
+    expect(messages('ps 23.5..2')).toEqual(['Range ends before it starts'])
+    expect(messages('ps 23..25')).toEqual(['Incomplete reference "ps 23..25"'])
+  })
+
+  it('leaves the existing period forms alone', () => {
+    expect(labels('ps 23.1')).toEqual(['Psalms 23:1'])
+    expect(labels('jn 1.50-2.3')).toEqual(['John 1:50-2:3'])
+    expect(labels('luke 1.18..')).toEqual(['Luke 1:18-80'])
+    expect(labels('ps 23')).toEqual(['Psalms 23'])
+    expect(labels('jude 5')).toEqual(['Jude 1:5'])
+    expect(labels('jn 3:16, 18')).toEqual(['John 3:16', 'John 3:18'])
+  })
+})
+
+describe('book abbreviations with a period', () => {
+  it('still accepts "gen. 1:1" and "1 jn. 3:1"', () => {
+    expect(labels('gen. 1:1')).toEqual(['Genesis 1:1'])
+    expect(labels('1 jn. 3:1')).toEqual(['1 John 3:1'])
+  })
+})

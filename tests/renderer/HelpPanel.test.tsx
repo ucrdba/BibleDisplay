@@ -29,6 +29,12 @@ describe('HelpPanel', () => {
     expect(out).toContain('<strong>Clear list</strong> on the Recent tab')
   })
 
+  it('explains verse lists with periods', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    expect(out).toContain('ps 23.1.3.4')
+    expect(out).toContain('lk 1.1..5.7..')
+  })
+
   it('shows the app version', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Bible Display — version 1.2.3')

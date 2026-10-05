@@ -50,6 +50,13 @@ export function HelpPanel({ version, onClose }: Props) {
             <code>luke 1:18..</code> (verse 18 to the end of the chapter)
           </li>
           <li>
+            <code>ps 23.1.3.4</code> (verses 1, 3 and 4 of Psalm 23)
+          </li>
+          <li>
+            <code>lk 1.1..5.7..</code> (verses 1 to 5, then 7 to the end of the chapter: <code>..</code> between two
+            numbers is a range)
+          </li>
+          <li>
             Lists with commas or semicolons: <code>jn 1:3-5, mk 3:1-3; luke 1:2</code>
           </li>
         </ul>

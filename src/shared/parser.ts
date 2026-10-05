@@ -5,6 +5,45 @@ import type { BibleIndex, Book, ParseResult, RefError, RefGroup } from './types'
 // A trailing ".." means "through the end of the chapter".
 const ITEM_RE = /^(.*?)\s*(\d+)(?:\s*[:.]\s*(\d+))?(?:\s*[-–—]\s*(\d+)(?:\s*[:.]\s*(\d+))?|\s*(\.\.))?\s*$/
 
+// A verse list: chapter[:.]verse followed by more verses separated by ".", where ".." between two numbers is a
+// range and a final ".." runs to the end of the chapter, e.g. "ps 23.1..3.5.7..". It needs at least two numbers
+// after the chapter, so "ps 23.1" and "luke 1.18.." keep their usual meaning.
+const LIST_RE = /^(.*?)\s*(\d+)\s*[:.]\s*(\d+(?:\s*(?:\.\.?|[-–—])\s*\d+)+(?:\s*\.\.)?)\s*$/
+// The dash forms that look like a list head but are ordinary ranges: "1:3-5", "1:50-2:3", "1.50-2.3".
+const DASH_RANGE_RE = /^\d+\s*[-–—]\s*\d+(?:\s*[:.]\s*\d+)?$/
+
+interface ListItem {
+  from: number
+  to: number | null
+  toEnd: boolean
+}
+
+type ListParse = { kind: 'list'; items: ListItem[] } | { kind: 'error'; message: string }
+
+/** The verses after "chapter." in a verse list (already matched by LIST_RE). */
+function parseVerseList(rest: string): ListParse {
+  if (/[-–—]/.test(rest)) return { kind: 'error', message: 'Use .. for a range in a verse list, e.g. ps 23.1.3..5' }
+  const tokens = rest.replace(/\s+/g, '').match(/\d+|\.\.|\./g) ?? []
+  const items: ListItem[] = []
+  let i = 0
+  while (i < tokens.length) {
+    const v: ListItem = { from: Number(tokens[i]), to: null, toEnd: false }
+    i++
+    if (tokens[i] === '..' && /^\d/.test(tokens[i + 1] ?? '')) {
+      v.to = Number(tokens[i + 1])
+      i += 2
+    }
+    if (tokens[i] === '..') {
+      if (v.to !== null) return { kind: 'error', message: "'..' at the end goes after a single verse" }
+      v.toEnd = true
+      i++
+    }
+    items.push(v)
+    if (tokens[i] === '.') i++
+  }
+  return { kind: 'list', items }
+}
+
 interface Item {
   text: string
   start: number
@@ -63,6 +102,65 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
 
   for (const item of splitItems(input)) {
     const fail = (message: string) => errors.push({ message, inputStart: item.start, inputEnd: item.end })
+
+    // The book named in this item, or the previous item's book when none is named; null after reporting a problem.
+    const bookFor = (bookText: string): Book | null => {
+      if (!bookText) {
+        if (!lastBook) fail('Missing book name')
+        return lastBook
+      }
+      // Check if bookText looks incomplete (ends with punctuation, or a number then periods as in "ps 23..25")
+      if (/[\s:\-–—]$/.test(bookText) || /\d\s*\.+$/.test(bookText)) {
+        fail(`Incomplete reference "${item.text}"`)
+        return null
+      }
+      const r = resolveBook(bookText)
+      if (r.kind !== 'book') {
+        fail(bookError(bookText, r))
+        return null
+      }
+      return r.book
+    }
+
+    const list = LIST_RE.exec(item.text)
+    if (list && !DASH_RANGE_RE.test(list[3])) {
+      const book = bookFor(list[1])
+      if (!book) continue
+      const chapter = Number(list[2])
+      const parsed = parseVerseList(list[3])
+      if (parsed.kind === 'error') {
+        fail(parsed.message)
+        continue
+      }
+      const made: RefGroup[] = []
+      let problem: string | null = null
+      for (const v of parsed.items) {
+        const ev = v.toEnd ? Math.max(v.from, index.verseCount(book.id, chapter)) : (v.to ?? v.from)
+        problem = validate(book, chapter, v.from, chapter, ev, index)
+        if (problem) break
+        made.push({
+          label: formatLabel(book, chapter, v.from, chapter, ev, false),
+          bookId: book.id,
+          startChapter: chapter,
+          startVerse: v.from,
+          endChapter: chapter,
+          endVerse: ev,
+          whole: false,
+          inputStart: item.start,
+          inputEnd: item.end,
+        })
+      }
+      if (problem) {
+        fail(problem)
+        continue
+      }
+      groups.push(...made)
+      lastBook = book
+      lastChapter = chapter
+      lastWasVerse = true
+      continue
+    }
+
     const m = ITEM_RE.exec(item.text)
     if (!m) {
       const bookPart = item.text.replace(/[\s\d:.\-–—]+$/, '')
@@ -85,26 +183,8 @@ export function parseReferences(input: string, index: BibleIndex): ParseResult {
     }
 
     const [, bookText, a, b, c, d, toEnd] = m
-    let book: Book
-    if (bookText) {
-      // Check if bookText looks incomplete (ends with punctuation)
-      if (/[\s:\-–—]$/.test(bookText)) {
-        fail(`Incomplete reference "${item.text}"`)
-        continue
-      }
-      const r = resolveBook(bookText)
-      if (r.kind !== 'book') {
-        fail(bookError(bookText, r))
-        continue
-      }
-      book = r.book
-    } else {
-      if (!lastBook) {
-        fail('Missing book name')
-        continue
-      }
-      book = lastBook
-    }
+    const book = bookFor(bookText)
+    if (!book) continue
 
     const n1 = Number(a)
     const n2 = b === undefined ? undefined : Number(b)
