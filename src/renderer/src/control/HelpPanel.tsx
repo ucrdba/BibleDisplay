@@ -168,6 +168,10 @@ export function HelpPanel({ version, onClose }: Props) {
           Right-click → <strong>Print…</strong> to print the passages (Jesus' words in red), or choose
           "Microsoft Print to PDF" for a PDF.
         </p>
+        <p>
+          Right-click → <strong>Clear</strong> to remove everything from the preview and the display (the same as
+          the Clear button or Esc).
+        </p>
 
         <h3>Blank vs Clear</h3>
         <p>Blank hides the verses but keeps them (press B again to bring them back); Clear removes them.</p>

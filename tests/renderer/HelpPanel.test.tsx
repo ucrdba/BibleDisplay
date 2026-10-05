@@ -18,6 +18,11 @@ describe('HelpPanel', () => {
     }
   })
 
+  it('explains Clear in the preview right-click menu', () => {
+    const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
+    expect(out).toMatch(/Right-click[^<]*<strong>Clear<\/strong>/)
+  })
+
   it('shows the app version', () => {
     const out = renderToStaticMarkup(<HelpPanel version="1.2.3" onClose={() => {}} />)
     expect(out).toContain('Bible Display — version 1.2.3')

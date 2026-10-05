@@ -15,7 +15,7 @@ Show KJV Bible verses on a second monitor. Type references on the control window
 - Imported and Recent lists: click a line to show it; **Ctrl+click** adds or removes lines, **Shift+click** selects a range — all selected lines show together. Right-click (or press **Delete**) to delete the selected lines from the list.
 - Search: press **Ctrl+F** (or open the **Search** tab) and type. Modes: **All words** (any order; `"quoted phrase"`; `faith*` for word starts), **Exact phrase** (`still wat`), **Any word**, and **Regex**. Limit it to the Old or New Testament, the Gospels, or one book. Click results to show them (Ctrl/Shift+click for several). In the verse box, `?still waters` or `/still\s+wat/` opens a search.
 - Browse: the **Books | Chapters | Verses** column lets you point and click. Click a verse to show it; **Ctrl+click** adds or removes verses (across chapters and books); **Shift+click** selects a range from the last verse clicked; **Ctrl+Shift+click** adds a range. Double-click a chapter to show all of it. Whatever is on screen is highlighted in the picker. The arrow at the top hides or shows the column.
-- Right-click the live preview to **Save verse list…** (re-importable), **Save verse text…** (full text), or **Print…**.
+- Right-click the live preview to **Save verse list…** (re-importable), **Save verse text…** (full text), or **Print…**, or **Clear** everything from the preview and the display (same as Esc).
 - **Display on** (right panel): pick which monitor shows the verses; your choice is remembered.
 - **»** at the top of the right panel hides it to give the preview more room; **«** brings it back. Shortcuts and the highlight toolbar still work while it is hidden.
 - **F1** or **? Help**: shows how to use everything.

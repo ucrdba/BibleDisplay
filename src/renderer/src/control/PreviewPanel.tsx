@@ -3,6 +3,7 @@ import type { Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, ScrollCommand, VerseRange } from '../../../shared/types'
 import { VerseView } from '../verse/VerseView'
 import { HighlightToolbar } from './HighlightToolbar'
+import { PreviewMenu } from './PreviewMenu'
 import { selectionToRanges } from './selection'
 
 interface Size {
@@ -35,6 +36,7 @@ interface Props {
   onSaveList(): void
   onSaveText(): void
   onPrint(): void
+  onClear(): void
 }
 
 export function previewScale(panel: Size, display: Size): number {
@@ -57,6 +59,7 @@ export function PreviewPanel({
   onSaveList,
   onSaveText,
   onPrint,
+  onClear,
 }: Props) {
   const outer = useRef<HTMLDivElement>(null)
   const viewport = useRef<HTMLDivElement>(null)
@@ -148,53 +151,17 @@ export function PreviewPanel({
         />
       )}
       {menu && (
-        <div
-          className="context-menu"
-          ref={menuRef}
-          style={{ left: menu.x, top: menu.y }}
-          role="menu"
-          onKeyDown={e => {
-            if (e.key === 'Escape') {
-              e.preventDefault()
-              setMenu(null)
-            }
-          }}
-        >
-          <button
-            type="button"
-            role="menuitem"
-            autoFocus
-            disabled={!canSave}
-            onClick={() => {
-              setMenu(null)
-              onSaveList()
-            }}
-          >
-            Save verse list…
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!canSave}
-            onClick={() => {
-              setMenu(null)
-              onSaveText()
-            }}
-          >
-            Save verse text…
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            disabled={!canSave}
-            onClick={() => {
-              setMenu(null)
-              onPrint()
-            }}
-          >
-            Print…
-          </button>
-        </div>
+        <PreviewMenu
+          x={menu.x}
+          y={menu.y}
+          menuRef={menuRef}
+          canSave={canSave}
+          onClose={() => setMenu(null)}
+          onSaveList={onSaveList}
+          onSaveText={onSaveText}
+          onPrint={onPrint}
+          onClear={onClear}
+        />
       )}
     </div>
   )

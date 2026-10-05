@@ -436,6 +436,7 @@ export function ControlScreen() {
               onSaveList={saveList}
               onSaveText={saveText}
               onPrint={() => void print()}
+              onClear={clear}
             />
           )}
         </main>

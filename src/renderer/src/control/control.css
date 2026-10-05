@@ -411,6 +411,12 @@ input[type='color'] {
   outline: none;
 }
 
+.context-menu__sep {
+  height: 1px;
+  margin: 2px 0;
+  background: var(--border);
+}
+
 .context-menu button:disabled {
   opacity: 0.45;
   cursor: default;
