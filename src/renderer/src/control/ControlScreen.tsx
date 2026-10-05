@@ -119,13 +119,11 @@ export function ControlScreen() {
     setInput('')
     setErrors([])
     resetListSel()
-    void present([], blank)
-    setBrowseJump(n => n + 1)
+    void present([], blank).then(() => setBrowseJump(n => n + 1))
   }
 
   const removeGroup = (i: number) => {
-    void present(refGroups.filter((_, j) => j !== i), blank)
-    setBrowseJump(n => n + 1)
+    void present(refGroups.filter((_, j) => j !== i), blank).then(() => setBrowseJump(n => n + 1))
   }
 
   const toggleBlank = () => {
@@ -187,6 +185,7 @@ export function ControlScreen() {
       .join(', ')
     if (!text) return
     resetListSel()
+    setSearchSel(EMPTY_SELECTION)
     setInput(text)
     setErrors([])
     void show(text, false)
@@ -254,6 +253,7 @@ export function ControlScreen() {
     }
     const text = toReferenceText(next)
     resetListSel()
+    setSearchSel(EMPTY_SELECTION)
     setInput(text)
     setErrors([])
     void show(text, false, true)

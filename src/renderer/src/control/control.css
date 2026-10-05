@@ -571,6 +571,20 @@ input[type='color'] {
   overflow: hidden;
 }
 
+.panel--browse > .panel__toggle {
+  align-self: flex-end;
+  margin-bottom: -20px;
+}
+
+.panel--browse > .panel__title {
+  margin-top: 0;
+}
+
+.panel--browse.panel--collapsed > .panel__toggle {
+  align-self: center;
+  margin-bottom: 0;
+}
+
 .browse {
   display: flex;
   gap: 4px;
