@@ -181,3 +181,19 @@ describe('mergeSpans', () => {
     ])
   })
 })
+
+describe('searchVerses - trailing and leading apostrophes', () => {
+  const rows: VerseRow[] = [[1, 1, 1, 'Thy sons’ wives and the fathers’ house, ‘tis so.']]
+  const go = (text: string, mode: SearchMode) => searchVerses(rows, { text, mode, scope: 'bible' })
+  it('matches a word followed by a possessive apostrophe', () => {
+    for (const mode of ['all', 'any'] as SearchMode[]) {
+      expect(refs(go("sons'", mode))).toEqual(['1.1.1'])
+      expect(refs(go("fathers' house", mode))).toEqual(['1.1.1'])
+      expect(refs(go("'tis", mode))).toEqual(['1.1.1'])
+    }
+  })
+  it('strips edge apostrophes but keeps inner ones', () => {
+    expect(parseTerms("sons'")).toEqual([{ words: ['sons'] }])
+    expect(parseTerms("name's")).toEqual([{ words: ["name's"] }])
+  })
+})

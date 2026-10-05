@@ -76,3 +76,11 @@ describe('applyBook', () => {
     })
   })
 })
+
+describe('suggest in search text', () => {
+  it('offers nothing for ? and / searches', () => {
+    expect(at('?mercy, job')).toEqual({ kind: 'none' })
+    expect(at('/gr.ce, job/')).toEqual({ kind: 'none' })
+    expect(at('  ?job')).toEqual({ kind: 'none' })
+  })
+})

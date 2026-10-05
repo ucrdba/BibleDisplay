@@ -33,6 +33,7 @@ export class SearchRunner {
   private debounce: ReturnType<typeof setTimeout> | null = null
   private timeout: ReturnType<typeof setTimeout> | null = null
   private state: SearchState = INITIAL_SEARCH_STATE
+  private errorStreak = 0
 
   constructor(
     private readonly makeWorker: () => WorkerLike,
@@ -53,7 +54,8 @@ export class SearchRunner {
     this.verses = verses
     this.inFlight = null
     this.clearTimeout()
-    this.startWorker()
+    this.errorStreak = 0
+    if (!this.startWorker()) return
     if (this.hasText()) this.run()
     else this.emit({ status: 'idle', total: 0, hits: [], note: null })
   }
@@ -84,7 +86,7 @@ export class SearchRunner {
   private run(): void {
     this.debounce = null
     if (!this.query || !this.worker) return
-    if (this.inFlight !== null) this.startWorker()
+    if (this.inFlight !== null && !this.startWorker()) return
     const id = ++this.nextId
     this.inFlight = id
     this.worker.postMessage({ type: 'search', id, query: this.query })
@@ -96,6 +98,7 @@ export class SearchRunner {
   private onReply(reply: WorkerReply): void {
     if (reply.id !== this.inFlight) return
     this.inFlight = null
+    this.errorStreak = 0
     this.clearTimeout()
     const result = reply.result
     if (result.kind === 'ok') this.emit({ status: 'done', total: result.total, hits: result.hits, note: null })
@@ -105,8 +108,27 @@ export class SearchRunner {
   private fail(): void {
     this.inFlight = null
     this.clearTimeout()
-    this.startWorker()
+    if (!this.startWorker()) return
     this.emit({ ...this.state, status: 'done', note: TIMEOUT_NOTE })
+  }
+
+  private onWorkerError(w: WorkerLike): void {
+    if (this.worker !== w) return
+    const wasSearching = this.inFlight !== null
+    this.inFlight = null
+    this.clearTimeout()
+    if (++this.errorStreak >= 2) {
+      this.giveUp()
+      return
+    }
+    if (!this.startWorker()) return
+    if (wasSearching) this.emit({ ...this.state, status: 'done', note: TIMEOUT_NOTE })
+  }
+
+  private giveUp(): void {
+    this.worker?.terminate()
+    this.worker = null
+    this.setUnavailable()
   }
 
   private cancel(): void {
@@ -116,13 +138,22 @@ export class SearchRunner {
     this.startWorker()
   }
 
-  private startWorker(): void {
+  /** Replaces the worker; returns false (and goes unavailable) if one cannot be created. */
+  private startWorker(): boolean {
     this.worker?.terminate()
-    const w = this.makeWorker()
+    this.worker = null
+    let w: WorkerLike
+    try {
+      w = this.makeWorker()
+    } catch {
+      this.setUnavailable()
+      return false
+    }
     w.onmessage = e => this.onReply(e.data)
-    w.onerror = () => this.fail()
+    w.onerror = () => this.onWorkerError(w)
     w.postMessage({ type: 'init', verses: this.verses ?? [] })
     this.worker = w
+    return true
   }
 
   private clearDebounce(): void {

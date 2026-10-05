@@ -28,6 +28,7 @@ export function matchBooks(text: string, limit = 8): Book[] {
 }
 
 export function suggest(input: string, caret: number, index: BibleIndex): Suggestion {
+  if (/^\s*[?/]/.test(input)) return NONE
   const before = input.slice(0, caret)
   const itemStart = Math.max(before.lastIndexOf(','), before.lastIndexOf(';')) + 1
   const raw = input.slice(itemStart, caret)

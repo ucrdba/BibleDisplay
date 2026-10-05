@@ -47,9 +47,10 @@
 }
 
 .panel__toggle {
-  position: absolute;
-  top: 4px;
-  right: 4px;
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
   padding: 0 6px;
   line-height: 18px;
 }
@@ -331,6 +332,14 @@ input[type='color'] {
 .link-btn.is-active {
   background: #e3ecfb;
   border-radius: 3px;
+  font-weight: 600;
+}
+
+.search-hit.is-active {
+  font-weight: normal;
+}
+
+.search-hit.is-active .search-hit__ref {
   font-weight: 600;
 }
 

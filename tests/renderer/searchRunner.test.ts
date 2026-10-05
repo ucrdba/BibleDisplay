@@ -161,3 +161,57 @@ describe('SearchRunner', () => {
     expect(worker().searches()).toHaveLength(0)
   })
 })
+
+describe('SearchRunner worker failures', () => {
+  it('does not restart forever when every worker errors', () => {
+    const r = ready()
+    r.setQuery(q('still'))
+    vi.advanceTimersByTime(300)
+    for (let i = 0; i < 10; i++) worker().onerror?.({})
+    expect(FakeWorker.all.length).toBeLessThanOrEqual(3)
+    expect(last().status).toBe('unavailable')
+    expect(worker().terminated).toBe(true)
+  })
+
+  it('ignores an error from a replaced worker', () => {
+    const r = ready()
+    const old = worker()
+    r.setVerses(VERSES)
+    const count = FakeWorker.all.length
+    old.onerror?.({})
+    expect(FakeWorker.all).toHaveLength(count)
+    expect(last().status).toBe('idle')
+  })
+
+  it('does not show the timeout note for an idle worker error', () => {
+    ready()
+    worker().onerror?.({})
+    expect(last().note).toBeNull()
+    expect(last().status).not.toBe('unavailable')
+  })
+
+  it('resets the failure count after a successful reply, and on setVerses', () => {
+    const r = ready()
+    r.setQuery(q('still'))
+    vi.advanceTimersByTime(300)
+    worker().onerror?.({})
+    r.setQuery(q('waters'))
+    vi.advanceTimersByTime(300)
+    worker().reply(worker().searches()[0].id, ok([HIT]))
+    worker().onerror?.({})
+    expect(last().status).not.toBe('unavailable')
+    worker().onerror?.({})
+    expect(last().status).toBe('unavailable')
+    r.setVerses(VERSES)
+    expect(last().status).toBe('searching')
+    worker().onerror?.({})
+    expect(last().status).not.toBe('unavailable')
+  })
+
+  it('goes unavailable when the worker constructor throws', () => {
+    const states2: SearchState[] = []
+    const r = new SearchRunner(() => { throw new Error('SecurityError') }, s => states2.push(s))
+    expect(() => r.setVerses(VERSES)).not.toThrow()
+    expect(states2[states2.length - 1].status).toBe('unavailable')
+  })
+})

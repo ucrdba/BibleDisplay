@@ -40,7 +40,9 @@ export const SEARCH_LIMIT = 500
 export const normalizeApostrophes = (s: string) => s.replace(/[\u2018\u2019]/g, "'")
 
 function cleanWord(word: string): string {
-  const cleaned = normalizeApostrophes(word).replace(/[^\p{L}\p{N}'*]/gu, '')
+  const cleaned = normalizeApostrophes(word)
+    .replace(/[^\p{L}\p{N}'*]/gu, '')
+    .replace(/^'+|'+$/g, '')
   return /[\p{L}\p{N}]/u.test(cleaned) ? cleaned : ''
 }
 
