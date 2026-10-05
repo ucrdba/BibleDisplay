@@ -183,3 +183,18 @@ describe('UserDb search prefs', () => {
     expect(open(path).getSearchPrefs()).toEqual({ mode: 'all', scope: 'bible' })
   })
 })
+
+describe("UserDb Strong's on display", () => {
+  it('starts off and remembers the choice across reopening', () => {
+    const path = newPath()
+    const db = open(path)
+    expect(db.getStrongsOnDisplay()).toBe(false)
+    db.setStrongsOnDisplay(true)
+    db.close()
+    opened.pop()
+    const again = open(path)
+    expect(again.getStrongsOnDisplay()).toBe(true)
+    again.setStrongsOnDisplay(false)
+    expect(again.getStrongsOnDisplay()).toBe(false)
+  })
+})

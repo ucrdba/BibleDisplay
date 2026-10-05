@@ -31,7 +31,7 @@ export interface MainContext {
 }
 
 export function registerIpc(ctx: MainContext): void {
-  let state: DisplayState = { groups: [], blank: false }
+  let state: DisplayState = { groups: [], blank: false, strongs: null }
   const toDisplay = (channel: string, payload: unknown) => ctx.getDisplay()?.webContents.send(channel, payload)
 
   ipcMain.handle(IPC.verseCounts, () => ctx.bible.verseCounts())
@@ -40,6 +40,8 @@ export function registerIpc(ctx: MainContext): void {
   ipcMain.handle(IPC.getStrongsEntry, (_e, id: unknown) =>
     typeof id === 'string' && /^[HG]\d+$/.test(id) ? ctx.bible.strongsEntry(id) : null,
   )
+  ipcMain.handle(IPC.getStrongsOnDisplay, () => ctx.user.getStrongsOnDisplay())
+  ipcMain.handle(IPC.setStrongsOnDisplay, (_e, on: unknown) => ctx.user.setStrongsOnDisplay(on === true))
   ipcMain.handle(IPC.getSearchPrefs, () => ctx.user.getSearchPrefs())
   ipcMain.handle(IPC.setSearchPrefs, (_e, prefs: SearchPrefs) => ctx.user.setSearchPrefs(prefs))
   ipcMain.handle(IPC.loadGroups, (_e, groups: RefGroup[]) => loadGroups(ctx.bible, ctx.user, groups))

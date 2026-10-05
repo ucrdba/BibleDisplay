@@ -6,7 +6,7 @@ import './display.css'
 import { lineHeightPx, scrollTarget } from './scroll'
 
 export function DisplayScreen() {
-  const [state, setState] = useState<DisplayState>({ groups: [], blank: false })
+  const [state, setState] = useState<DisplayState>({ groups: [], blank: false, strongs: null })
   const [styles, setStyles] = useState<Styles>(DEFAULT_STYLES)
   const scroller = useRef<HTMLDivElement>(null)
   const stylesRef = useRef(styles)

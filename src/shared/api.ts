@@ -22,6 +22,8 @@ export interface ControlApi {
   allVerses(): Promise<VerseRow[]>
   hasStrongs(): Promise<boolean>
   getStrongsEntry(id: string): Promise<StrongsEntry | null>
+  getStrongsOnDisplay(): Promise<boolean>
+  setStrongsOnDisplay(on: boolean): Promise<void>
   getSearchPrefs(): Promise<SearchPrefs>
   setSearchPrefs(prefs: SearchPrefs): Promise<void>
   loadGroups(groups: RefGroup[]): Promise<DisplayGroup[]>

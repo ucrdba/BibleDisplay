@@ -112,7 +112,7 @@ export function ControlScreen() {
     setRefGroups(next)
     setGroups(loaded)
     setSelection([])
-    api().present({ groups: loaded, blank: nextBlank })
+    api().present({ groups: loaded, blank: nextBlank, strongs: null })
   }, [])
 
   const show = async (text: string, recordRecent = true, fromPicker = false) => {
@@ -149,7 +149,7 @@ export function ControlScreen() {
   const toggleBlank = () => {
     const next = !blank
     setBlank(next)
-    api().present({ groups, blank: next })
+    api().present({ groups, blank: next, strongs: null })
   }
 
   const updateStyles = (next: Styles) => {

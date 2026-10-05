@@ -199,6 +199,17 @@ export class UserDb {
       .run(PANEL_KEYS[panel], JSON.stringify(collapsed))
   }
 
+  getStrongsOnDisplay(): boolean {
+    const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('strongsOnDisplay') as { value: string } | undefined
+    return row?.value === 'true'
+  }
+
+  setStrongsOnDisplay(on: boolean): void {
+    this.db
+      .prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value')
+      .run('strongsOnDisplay', JSON.stringify(on))
+  }
+
   getSearchPrefs(): SearchPrefs {
     const row = this.db.prepare('SELECT value FROM settings WHERE key = ?').get('search') as { value: string } | undefined
     if (!row) return { ...DEFAULT_SEARCH_PREFS }

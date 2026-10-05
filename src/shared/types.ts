@@ -88,6 +88,13 @@ export interface DisplayGroup {
   verses: VerseData[]
 }
 
+/** A Strong's entry shown in a band under the verses on the display. */
+export interface DisplayStrongs {
+  entry: StrongsEntry
+  /** The looked-up word to tint, or null. */
+  mark: VerseRange | null
+}
+
 export interface VerseRange {
   bookId: number
   chapter: number
@@ -103,6 +110,8 @@ export type ScrollCommand =
 export interface DisplayState {
   groups: DisplayGroup[]
   blank: boolean
+  /** The Strong's entry to show in a band under the verses, or null. */
+  strongs: DisplayStrongs | null
 }
 
 export interface MonitorInfo {

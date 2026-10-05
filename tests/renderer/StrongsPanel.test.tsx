@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { StrongsPanel } from '../../src/renderer/src/control/StrongsPanel'
 import {
+  displayStrongs,
   followLink,
   goBack,
   INITIAL_STRONGS,
@@ -75,5 +76,26 @@ describe('StrongsPanel', () => {
     expect(out).toContain('strongs-panel--collapsed')
     expect(out).not.toContain('meaning 430')
     expect(out).toContain('aria-expanded="false"')
+  })
+})
+
+describe('displayStrongs', () => {
+  const MARK = { bookId: 1, chapter: 1, verse: 1, start: 17, end: 20 }
+
+  it('is null when the toggle is off or nothing is looked up', () => {
+    expect(displayStrongs(showLookup(view('H430')), false, MARK)).toBeNull()
+    expect(displayStrongs(INITIAL_STRONGS, true, MARK)).toBeNull()
+    expect(displayStrongs(showLookup({ kind: 'untagged', word: 'the' }), true, null)).toBeNull()
+    expect(displayStrongs(showLookup({ kind: 'missing', id: 'H9999' }), true, null)).toBeNull()
+  })
+
+  it('shows the looked-up entry with its tint', () => {
+    expect(displayStrongs(showLookup(view('H430')), true, MARK)).toEqual({ entry: entry('H430'), mark: MARK })
+  })
+
+  it('drops the tint after following a link, and restores it on Back', () => {
+    const followed = followLink(showLookup(view('H430')), view('H433'))
+    expect(displayStrongs(followed, true, MARK)).toEqual({ entry: entry('H433'), mark: null })
+    expect(displayStrongs(goBack(followed), true, MARK)).toEqual({ entry: entry('H430'), mark: MARK })
   })
 })

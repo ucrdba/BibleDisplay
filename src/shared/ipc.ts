@@ -3,6 +3,8 @@ export const IPC = {
   allVerses: 'bible:all-verses',
   hasStrongs: 'strongs:available',
   getStrongsEntry: 'strongs:entry',
+  getStrongsOnDisplay: 'strongs:get-on-display',
+  setStrongsOnDisplay: 'strongs:set-on-display',
   getSearchPrefs: 'search:get-prefs',
   setSearchPrefs: 'search:set-prefs',
   loadGroups: 'bible:load-groups',
