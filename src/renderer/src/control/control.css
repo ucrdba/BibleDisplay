@@ -461,3 +461,88 @@ input[type='color'] {
   background: #f7f8fa;
   font: 12px Consolas, monospace;
 }
+
+.list-tabs {
+  display: flex;
+  gap: 2px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.list-tab {
+  border: 1px solid transparent;
+  border-bottom: none;
+  background: none;
+  border-radius: 4px 4px 0 0;
+  padding: 4px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.list-tab.is-active {
+  border-color: var(--border);
+  background: var(--panel);
+  color: inherit;
+  margin-bottom: -1px;
+}
+
+/* The tab strip already separates the lists from the controls above. */
+.panel--left .list-tabs + .list {
+  border-top: none;
+  margin-top: 0;
+}
+
+.search__box {
+  display: flex;
+  gap: 4px;
+}
+
+.search__input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 4px 6px;
+}
+
+.search__clear {
+  padding: 0 8px;
+}
+
+.search__options {
+  display: flex;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.search__options select {
+  flex: 1;
+  min-width: 0;
+}
+
+.search__status {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.search-hit {
+  display: block;
+  width: 100%;
+  color: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.search-hit__ref {
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.search-hit b {
+  background: #fff3b0;
+}
