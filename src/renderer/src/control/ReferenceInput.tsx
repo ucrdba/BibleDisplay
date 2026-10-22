@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
+import { useRef, useState, type KeyboardEvent, type RefObject } from 'react'
 import { applyBook, suggest, type Suggestion } from '../../../shared/suggest'
 import type { BibleIndex, Book, RefError } from '../../../shared/types'
 import { markErrors } from './errorMarks'
@@ -9,12 +9,14 @@ interface Props {
   onSubmit(): void
   errors: RefError[]
   index: BibleIndex | null
+  inputRef?: RefObject<HTMLInputElement | null>
 }
 
 const NONE: Suggestion = { kind: 'none' }
 
-export function ReferenceInput({ value, onChange, onSubmit, errors, index }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
+export function ReferenceInput({ value, onChange, onSubmit, errors, index, inputRef: outerRef }: Props) {
+  const ownRef = useRef<HTMLInputElement>(null)
+  const inputRef = outerRef ?? ownRef
   const mirrorRef = useRef<HTMLDivElement>(null)
   const [caret, setCaret] = useState(value.length)
   const [active, setActive] = useState(0)

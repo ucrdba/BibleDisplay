@@ -85,7 +85,7 @@ export function HelpPanel({ version, onClose }: Props) {
             <kbd>Enter</kbd> = Show
           </li>
           <li>
-            <kbd>Esc</kbd> = Clear (empty the box and the display)
+            <kbd>Esc</kbd> = Clear (empty the box and the display, cursor back in the box)
           </li>
           <li>
             <kbd>B</kbd> = Blank / unblank

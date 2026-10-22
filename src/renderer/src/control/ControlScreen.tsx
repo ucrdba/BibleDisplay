@@ -75,6 +75,7 @@ export function ControlScreen() {
   const [searchPrefs, setSearchPrefs] = useState<SearchPrefs>(DEFAULT_SEARCH_PREFS)
   const [searchSel, setSearchSel] = useState<ListSelection>(EMPTY_SELECTION)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const verseInputRef = useRef<HTMLInputElement>(null)
   const searchQuery = useMemo<SearchQuery>(() => ({ text: searchText, ...searchPrefs }), [searchText, searchPrefs])
   const search = useSearch(searchQuery)
 
@@ -135,6 +136,7 @@ export function ControlScreen() {
 
   const clear = () => {
     setInput('')
+    verseInputRef.current?.focus()
     setErrors([])
     resetListSel()
     void present([]).then(() => setBrowseJump(n => n + 1))
@@ -430,6 +432,7 @@ export function ControlScreen() {
             onSubmit={submitInput}
             errors={errors}
             index={index}
+            inputRef={verseInputRef}
           />
           <div className="button-row">
             <button type="button" className="btn btn--primary" onClick={submitInput}>
