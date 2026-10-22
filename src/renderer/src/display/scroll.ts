@@ -38,6 +38,9 @@ export function scrollTarget(cmd: ScrollCommand, m: ScrollMetrics): number {
     case 'by':
       target = m.top + cmd.px
       break
+    case 'to':
+      target = cmd.px
+      break
   }
   return Math.min(max, Math.max(0, target))
 }

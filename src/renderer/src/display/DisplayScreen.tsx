@@ -36,7 +36,7 @@ export function DisplayScreen() {
           scrollHeight: el.scrollHeight,
           lineHeight: lineHeightPx(stylesRef.current),
         })
-        el.scrollTo({ top, behavior: cmd.kind === 'by' ? 'auto' : 'smooth' })
+        el.scrollTo({ top, behavior: cmd.kind === 'by' || cmd.kind === 'to' ? 'auto' : 'smooth' })
       }),
     ]
     void api.ready().then(r => {

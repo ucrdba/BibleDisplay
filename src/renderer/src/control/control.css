@@ -245,7 +245,44 @@
   overflow: hidden;
 }
 
+.preview__stage {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.preview__scrollbar {
+  flex: none;
+  width: 14px;
+  overflow-y: scroll;
+}
+
+.preview__scrollbar-track {
+  /* Needs some width: a zero-width box doesn't count toward what can be scrolled. */
+  width: 1px;
+}
+
+.preview__scrollbar::-webkit-scrollbar {
+  width: 14px;
+}
+
+.preview__scrollbar::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 7px;
+}
+
+.preview__scrollbar::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 7px;
+  border: 2px solid var(--border);
+}
+
+.preview__scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
 .preview__frame {
+  flex: none;
   overflow: hidden;
   box-shadow: 0 0 0 1px #000, 0 4px 16px rgba(0, 0, 0, 0.25);
 }

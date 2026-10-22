@@ -13,10 +13,13 @@ describe('scrollTarget', () => {
     expect(scrollTarget({ kind: 'home' }, m)).toBe(0)
     expect(scrollTarget({ kind: 'end' }, m)).toBe(2000)
     expect(scrollTarget({ kind: 'by', px: 120 }, m)).toBe(620)
+    expect(scrollTarget({ kind: 'to', px: 1234 }, m)).toBe(1234)
   })
 
   it('stays within bounds', () => {
     expect(scrollTarget({ kind: 'by', px: 99999 }, m)).toBe(2000)
+    expect(scrollTarget({ kind: 'to', px: -50 }, m)).toBe(0)
+    expect(scrollTarget({ kind: 'to', px: 99999 }, m)).toBe(2000)
     expect(scrollTarget({ kind: 'end' }, { ...m, scrollHeight: 800 })).toBe(0)
   })
 })

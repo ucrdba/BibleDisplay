@@ -106,6 +106,7 @@ export interface VerseRange {
 export type ScrollCommand =
   | { kind: 'lineUp' | 'lineDown' | 'pageUp' | 'pageDown' | 'home' | 'end' }
   | { kind: 'by'; px: number }
+  | { kind: 'to'; px: number }
 
 export interface DisplayState {
   groups: DisplayGroup[]

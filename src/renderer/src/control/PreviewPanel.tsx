@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Styles } from '../../../shared/styles'
 import type { DisplayGroup, DisplayInfo, DisplayStrongs, ScrollCommand, VerseRange } from '../../../shared/types'
 import { DisplayLayout } from '../verse/DisplayLayout'
@@ -22,6 +22,10 @@ const TOOLBAR_WIDTH = 340
 const TOOLBAR_HEIGHT = 40
 const MENU_WIDTH = 190
 const MENU_HEIGHT = 114
+/** Room kept beside the preview for its scrollbar (bar width + gap). */
+const BAR_SPACE = 20
+/** How long after the user moves the scrollbar before display reports may move it again. */
+const BAR_HOLD_MS = 300
 
 interface Props {
   groups: DisplayGroup[]
@@ -95,6 +99,11 @@ export function PreviewPanel({
   const [panel, setPanel] = useState<Size>({ width: 0, height: 0 })
   const [anchor, setAnchor] = useState<Anchor | null>(null)
   const [menu, setMenu] = useState<Anchor | null>(null)
+  const bar = useRef<HTMLDivElement>(null)
+  const [content, setContent] = useState({ scroll: 0, client: 0 })
+  const barLastSet = useRef(0)
+  const barUserAt = useRef(0)
+  const barTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!menu) return
@@ -118,6 +127,48 @@ export function PreviewPanel({
   useEffect(() => {
     if (versesEl.current) versesEl.current.scrollTop = scrollTop
   }, [scrollTop, groups, strongs])
+
+  // Measure the verses area so the scrollbar beside the preview matches it.
+  useLayoutEffect(() => {
+    const el = versesEl.current
+    if (!el) return
+    const measure = () =>
+      setContent(c =>
+        c.scroll === el.scrollHeight && c.client === el.clientHeight ? c : { scroll: el.scrollHeight, client: el.clientHeight },
+      )
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [groups, strongs, styles, blank, info])
+
+  const k = previewScale({ width: Math.max(0, panel.width - BAR_SPACE), height: panel.height }, info)
+
+  // Keep the scrollbar where the display is (unless the user is moving it right now).
+  // Reads the latest values from a ref, since it also runs later from a timer.
+  const barTarget = useRef(0)
+  barTarget.current = scrollTop * k
+  const syncBar = () => {
+    const el = bar.current
+    if (!el || Date.now() - barUserAt.current < BAR_HOLD_MS) return
+    el.scrollTop = barTarget.current
+    barLastSet.current = el.scrollTop
+  }
+  useEffect(syncBar)
+  useEffect(() => () => {
+    if (barTimer.current) clearTimeout(barTimer.current)
+  }, [])
+
+  const handleBarScroll = () => {
+    const el = bar.current
+    if (!el || k <= 0 || Math.abs(el.scrollTop - barLastSet.current) < 1) return
+    barUserAt.current = Date.now()
+    onScroll({ kind: 'to', px: el.scrollTop / k })
+    if (barTimer.current) clearTimeout(barTimer.current)
+    barTimer.current = setTimeout(syncBar, BAR_HOLD_MS)
+  }
+  const scrollable = content.scroll > content.client + 1
 
   const verses = groups.flatMap(g => g.verses)
 
@@ -166,8 +217,6 @@ export function PreviewPanel({
     }
   }
 
-  const k = previewScale(panel, info)
-
   const handleMouseUp = (e: ReactMouseEvent<HTMLDivElement>) => {
     const sel = window.getSelection()
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed || !viewport.current) {
@@ -208,16 +257,28 @@ export function PreviewPanel({
       onWheel={e => onScroll({ kind: 'by', px: e.deltaY / Math.max(k, 0.1) })}
       onContextMenu={handleContextMenu}
     >
-      <div className="preview__frame" style={{ width: info.width * k, height: info.height * k }}>
+      <div className="preview__stage">
+        <div className="preview__frame" style={{ width: info.width * k, height: info.height * k }}>
+          <div
+            className="preview__viewport"
+            ref={viewport}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setHighlight('strongs-hover', null)}
+            style={{ width: info.width, height: info.height, transform: `scale(${k})` }}
+          >
+            <DisplayLayout groups={groups} styles={styles} blank={blank} strongs={strongs} versesRef={versesEl} />
+          </div>
+        </div>
         <div
-          className="preview__viewport"
-          ref={viewport}
-          onMouseUp={handleMouseUp}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => setHighlight('strongs-hover', null)}
-          style={{ width: info.width, height: info.height, transform: `scale(${k})` }}
+          className="preview__scrollbar"
+          ref={bar}
+          title="Scroll the display"
+          style={{ height: content.client * k, visibility: scrollable ? 'visible' : 'hidden' }}
+          onScroll={handleBarScroll}
+          onWheel={e => e.stopPropagation()}
         >
-          <DisplayLayout groups={groups} styles={styles} blank={blank} strongs={strongs} versesRef={versesEl} />
+          <div className="preview__scrollbar-track" style={{ height: content.scroll * k }} />
         </div>
       </div>
       {hasSelection && anchor && (
